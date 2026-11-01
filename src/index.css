@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500;1,6..72,600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-paper: #FBF6E6;
+    --color-ink: #16130F;
+    --color-paddy: #A8BE86;
+    --color-deep-leaf: #3E5B34;
+    --color-clay: #D98B6F;
+    --color-water: #A9C8EC;
+    --color-periwinkle: #9FA9EE;
+    --color-turmeric: #E7B94A;
+    --color-dark-footer: #0E0C0B;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: #FBF6E6;
+    color: #16130F;
+  }
+
+  body {
+    background-color: #FBF6E6;
+    color: #16130F;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  /* Editorial Serif Heading Styles */
+  h1, h2, h3, .font-serif {
+    font-family: 'Newsreader', Georgia, serif;
+    font-feature-settings: "liga" 1, "kern" 1;
+  }
+
+  /* Monospace Labels & Meta */
+  code, kbd, samp, pre, .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+}
+
+/* Custom FadeIn Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Reduced Motion Respect */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

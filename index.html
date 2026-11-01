@@ -1,0 +1,2581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AGRICA — Precision Irrigation & Agricultural Platform</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%233E5B34'/><path d='M12 5C12 5 8.5 10 8.5 13.5C8.5 15.4 10.1 17 12 17C13.9 17 15.5 15.4 15.5 13.5C15.5 10 12 5 12 5Z' fill='%23FBF6E6'/></svg>" />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500;1,6..72,600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: '#FBF6E6',
+            ink: '#16130F',
+            paddy: '#A8BE86',
+            deepLeaf: '#3E5B34',
+            clay: '#D98B6F',
+            waterBlue: '#A9C8EC',
+            periwinkle: '#9FA9EE',
+            turmeric: '#E7B94A',
+          },
+          fontFamily: {
+            serif: ['Newsreader', 'Georgia', 'serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & Babel Standalone -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body { background-color: #FBF6E6; color: #16130F; font-family: 'Inter', sans-serif; font-size: 16px; }
+    h1, h2, h3, h4, .font-serif { font-family: 'Newsreader', Georgia, serif; }
+    code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fadeIn { animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .paper-texture {
+      background-image: radial-gradient(rgba(22, 19, 15, 0.05) 1px, transparent 1px);
+      background-size: 12px 12px;
+    }
+  </style>
+</head>
+<body class="bg-[#FBF6E6] text-[#16130F] antialiased selection:bg-[#D98B6F] selection:text-[#FBF6E6] paper-texture">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // =========================================================================
+    // AGRICA EDITORIAL ALMANAC & BOTANICAL PRINT ICON LIBRARY
+    // (Replaces all colorful toy emojis with authentic hand-drawn vector vignettes)
+    // =========================================================================
+
+    const IconWheat = ({ className = "w-5 h-5", color = "#3E5B34" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22V2" />
+        <path d="M12 4C10.5 4 9 5.5 9 7C10.5 7 12 5.5 12 4Z" fill={color} fillOpacity="0.35" />
+        <path d="M12 4C13.5 4 15 5.5 15 7C13.5 7 12 5.5 12 4Z" fill={color} fillOpacity="0.35" />
+        <path d="M12 8C10 8 8 9.5 8 11.5C10 11.5 12 9.5 12 8Z" fill={color} fillOpacity="0.35" />
+        <path d="M12 8C14 8 16 9.5 16 11.5C14 11.5 12 9.5 12 8Z" fill={color} fillOpacity="0.35" />
+        <path d="M12 13C9.5 13 7.5 14.5 7.5 17C10 17 12 14.5 12 13Z" fill={color} fillOpacity="0.35" />
+        <path d="M12 13C14.5 13 16.5 14.5 16.5 17C14 17 12 14.5 12 13Z" fill={color} fillOpacity="0.35" />
+      </svg>
+    );
+
+    const IconPaddy = ({ className = "w-5 h-5", color = "#3E5B34" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 21C6.5 16 8.5 11 15 5" />
+        <path d="M15 5C17 6 18 8 17 11C15 13 13 12 12 10" fill={color} fillOpacity="0.4" />
+        <path d="M12 10C10 12 9 14 10 16C12 16 13 14 13.5 12.5" fill={color} fillOpacity="0.4" />
+        <path d="M10 16C8.5 17.5 8 19 9 20.5" />
+        <path d="M15 5L17 3" />
+        <path d="M17 11L19 10" />
+        <path d="M10 16L9 18" />
+      </svg>
+    );
+
+    const IconSugarcane = ({ className = "w-5 h-5", color = "#3E5B34" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="8" y1="22" x2="8" y2="2" />
+        <line x1="16" y1="22" x2="16" y2="2" />
+        <line x1="6" y1="7" x2="10" y2="7" strokeWidth="2" stroke="#D98B6F" />
+        <line x1="6" y1="13" x2="10" y2="13" strokeWidth="2" stroke="#D98B6F" />
+        <line x1="6" y1="18" x2="10" y2="18" strokeWidth="2" stroke="#D98B6F" />
+        <line x1="14" y1="6" x2="18" y2="6" strokeWidth="2" stroke="#D98B6F" />
+        <line x1="14" y1="12" x2="18" y2="12" strokeWidth="2" stroke="#D98B6F" />
+        <line x1="14" y1="17" x2="18" y2="17" strokeWidth="2" stroke="#D98B6F" />
+        <path d="M8 7C5 5 3 6 2 9" stroke={color} strokeWidth="1.6" />
+        <path d="M16 12C19 10 21 11 22 14" stroke={color} strokeWidth="1.6" />
+      </svg>
+    );
+
+    const IconCotton = ({ className = "w-5 h-5" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 21V16" />
+        <path d="M9 16C6 16 4.5 13.5 5.5 11C6.5 8.5 9 9 9.5 9.5C9.5 7 12 5.5 14 7C16 8.5 15.5 10.5 15 11C17.5 10.5 19.5 12 19 14.5C18.5 17 15.5 17 14 16" fill="#FBF6E6" />
+        <path d="M8 17C10 15 12 15 14 17C12 18 10 18 8 17Z" fill="#D98B6F" />
+      </svg>
+    );
+
+    const IconVegetables = ({ className = "w-5 h-5", color = "#3E5B34" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="13" r="8" fill="#A8BE86" fillOpacity="0.4" />
+        <path d="M12 5C7 5 5 9 5 13C5 17 8 20 12 20C16 20 19 17 19 13C19 9 17 5 12 5Z" />
+        <path d="M12 5C10 9 10 16 12 20" stroke={color} />
+        <path d="M7 10C10 11 14 11 17 10" stroke={color} />
+        <path d="M6 14C10 15 14 15 18 14" stroke={color} />
+        <path d="M12 2V5" />
+      </svg>
+    );
+
+    const IconMaize = ({ className = "w-5 h-5" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 21V19" />
+        <ellipse cx="12" cy="11" rx="4" ry="8" fill="#E7B94A" fillOpacity="0.5" />
+        <line x1="10" y1="6" x2="14" y2="6" stroke="#16130F" strokeWidth="1.2" />
+        <line x1="9" y1="9" x2="15" y2="9" stroke="#16130F" strokeWidth="1.2" />
+        <line x1="9" y1="12" x2="15" y2="12" stroke="#16130F" strokeWidth="1.2" />
+        <line x1="10" y1="15" x2="14" y2="15" stroke="#16130F" strokeWidth="1.2" />
+        <path d="M7 17C6 13 7 9 9 6" stroke="#3E5B34" strokeWidth="1.8" />
+        <path d="M17 17C18 13 17 9 15 6" stroke="#3E5B34" strokeWidth="1.8" />
+      </svg>
+    );
+
+    const IconWaterDrop = ({ className = "w-5 h-5", color = "#A9C8EC" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2.5C12 2.5 5 10.5 5 15.5C5 19.1 8.1 22 12 22C15.9 22 19 19.1 19 15.5C19 10.5 12 2.5 12 2.5Z" fill={color} fillOpacity="0.55" />
+        <path d="M10 12.5C9.5 13.5 9 15 9.5 16.5" stroke="#16130F" strokeWidth="1.3" />
+      </svg>
+    );
+
+    const IconPumpImpeller = ({ className = "w-5 h-5", color = "#3E5B34", isSpinning = false }) => (
+      <svg viewBox="0 0 24 24" className={`${className} ${isSpinning ? "animate-spin" : ""}`} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="9" fill={color} fillOpacity="0.25" />
+        <circle cx="12" cy="12" r="3" fill="#16130F" />
+        <path d="M12 3V7" />
+        <path d="M12 17V21" />
+        <path d="M3 12H7" />
+        <path d="M17 12H21" />
+        <path d="M5.6 5.6L8.5 8.5" />
+        <path d="M15.5 15.5L18.4 18.4" />
+        <path d="M18.4 5.6L15.5 8.5" />
+        <path d="M8.5 15.5L5.6 18.4" />
+      </svg>
+    );
+
+    const IconSoilProbe = ({ className = "w-5 h-5", color = "#D98B6F" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="3" y1="10" x2="21" y2="10" strokeDasharray="2 2" stroke="#16130F" strokeOpacity="0.6" />
+        <rect x="8" y="2" width="8" height="6" rx="2" fill="#FAF4E2" />
+        <circle cx="12" cy="5" r="1.5" fill="#3E5B34" />
+        <line x1="10" y1="8" x2="10" y2="22" strokeWidth="2" />
+        <line x1="14" y1="8" x2="14" y2="22" strokeWidth="2" />
+        <line x1="10" y1="13" x2="14" y2="13" stroke={color} strokeWidth="2" />
+        <line x1="10" y1="17" x2="14" y2="17" stroke={color} strokeWidth="2" />
+      </svg>
+    );
+
+    const IconRainCloud = ({ className = "w-5 h-5", color = "#9FA9EE" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 14C4.3 14 3 12.7 3 11C3 9.5 4.1 8.2 5.5 8.1C6 5.8 8.1 4 10.5 4C13.2 4 15.4 6 15.8 8.6C17.6 8.8 19 10.2 19 12C19 13.1 18.1 14 17 14" fill={color} fillOpacity="0.45" />
+        <line x1="8" y1="17" x2="6.5" y2="21" stroke="#9FA9EE" strokeWidth="2" />
+        <line x1="12" y1="17" x2="10.5" y2="21" stroke="#9FA9EE" strokeWidth="2" />
+        <line x1="16" y1="17" x2="14.5" y2="21" stroke="#9FA9EE" strokeWidth="2" />
+      </svg>
+    );
+
+    const IconAutoMode = ({ className = "w-5 h-5", color = "#3E5B34" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="5" y="5" width="14" height="14" rx="2" fill={color} fillOpacity="0.25" />
+        <path d="M12 9V15" />
+        <path d="M9 12H15" />
+        <circle cx="12" cy="12" r="2" fill="#16130F" />
+        <line x1="9" y1="2" x2="9" y2="5" />
+        <line x1="15" y1="2" x2="15" y2="5" />
+        <line x1="9" y1="19" x2="9" y2="22" />
+        <line x1="15" y1="19" x2="15" y2="22" />
+        <line x1="2" y1="9" x2="5" y2="9" />
+        <line x1="2" y1="15" x2="5" y2="15" />
+        <line x1="19" y1="9" x2="22" y2="9" />
+        <line x1="19" y1="15" x2="22" y2="15" />
+      </svg>
+    );
+
+    const IconManualMode = ({ className = "w-5 h-5", color = "#D98B6F" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="4" y="14" width="16" height="7" rx="3.5" fill="#FAF4E2" />
+        <circle cx="8" cy="17.5" r="2.5" fill={color} />
+        <path d="M8 15L15 4" strokeWidth="2.5" />
+        <circle cx="15.5" cy="4" r="2.5" fill="#16130F" />
+      </svg>
+    );
+
+    const IconBell = ({ className = "w-5 h-5" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21S18 15 18 8Z" fill="#FBF6E6" />
+        <path d="M10.3 21C10.7 21.6 11.3 22 12 22C12.7 22 13.3 21.6 13.7 21" />
+      </svg>
+    );
+
+    const IconFarmerAvatar = ({ className = "w-5 h-5", gender = "male" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" fill="#FAF4E2" strokeWidth="1.8" />
+        {gender === "male" ? (
+          <path d="M4 8C7 5 17 5 20 8" fill="#D98B6F" fillOpacity="0.4" strokeWidth="1.6" />
+        ) : (
+          <path d="M5 8C8 4 16 4 19 8" fill="#A8BE86" fillOpacity="0.4" strokeWidth="1.6" />
+        )}
+        <circle cx="12" cy="11" r="3.2" fill="#FAF4E2" />
+        <path d="M6.5 19.5C7.5 16.5 9.5 15.5 12 15.5C14.5 15.5 16.5 16.5 17.5 19.5" fill="#3E5B34" fillOpacity="0.3" />
+      </svg>
+    );
+
+    const IconFarmstead = ({ className = "w-5 h-5" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 21V10L10 4L17 10V21H3Z" fill="#FAF4E2" />
+        <rect x="7" y="14" width="4" height="7" fill="#16130F" />
+        <rect x="13" y="12" width="3" height="3" fill="#A9C8EC" />
+        <path d="M17 14L21 12V21H17V14Z" fill="#A8BE86" fillOpacity="0.4" />
+      </svg>
+    );
+
+    const IconSurveyGrid = ({ className = "w-5 h-5" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" fill="#FAF4E2" />
+        <line x1="3" y1="12" x2="21" y2="12" />
+        <line x1="12" y1="3" x2="12" y2="21" />
+        <circle cx="7.5" cy="7.5" r="1.5" fill="#3E5B34" />
+        <circle cx="16.5" cy="7.5" r="1.5" fill="#D98B6F" />
+        <circle cx="7.5" cy="16.5" r="1.5" fill="#A9C8EC" />
+        <circle cx="16.5" cy="16.5" r="1.5" fill="#3E5B34" />
+      </svg>
+    );
+
+    const IconSun = ({ className = "w-5 h-5" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="5" fill="#E7B94A" fillOpacity="0.5" />
+        <line x1="12" y1="2" x2="12" y2="4" />
+        <line x1="12" y1="20" x2="12" y2="22" />
+        <line x1="2" y1="12" x2="4" y2="12" />
+        <line x1="20" y1="12" x2="22" y2="12" />
+        <line x1="4.9" y1="4.9" x2="6.3" y2="6.3" />
+        <line x1="17.7" y1="17.7" x2="19.1" y2="19.1" />
+        <line x1="4.9" y1="19.1" x2="6.3" y2="17.7" />
+        <line x1="17.7" y1="6.3" x2="19.1" y2="4.9" />
+      </svg>
+    );
+
+    const IconPhoneDesk = ({ className = "w-5 h-5" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 16.92V19.92C22 20.48 21.54 20.94 20.98 20.92C10.05 20.44 3.56 13.95 3.08 3.02C3.06 2.46 3.52 2 4.08 2H7.08C7.6 2 8.03 2.39 8.08 2.91C8.17 3.82 8.39 4.7 8.74 5.53C8.89 5.88 8.81 6.29 8.52 6.57L6.85 8.24C8.42 11.33 10.97 13.88 14.06 15.45L15.73 13.78C16.01 13.49 16.42 13.41 16.77 13.56C17.6 13.91 18.48 14.13 19.39 14.22C19.91 14.27 20.3 14.7 20.3 15.22L22 16.92Z" fill="#3E5B34" fillOpacity="0.25" />
+      </svg>
+    );
+
+    const IconCheckCircle = ({ className = "w-5 h-5", color = "#3E5B34" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" fill={color} fillOpacity="0.2" />
+        <path d="M8 12L11 15L16 9" stroke="#3E5B34" strokeWidth="2.2" />
+      </svg>
+    );
+
+    const IconWarningTriangle = ({ className = "w-5 h-5", color = "#D98B6F" }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="#16130F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10.29 3.86L1.82 18A2 2 0 0 0 3.53 21H20.47A2 2 0 0 0 22.18 18L13.71 3.86A2 2 0 0 0 10.29 3.86Z" fill={color} fillOpacity="0.3" />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <circle cx="12" cy="17" r="1" fill="#16130F" />
+      </svg>
+    );
+
+    // =========================================================================
+    // HANDCRAFTED WOODCUT ENGRAVING OF THE SPRINKLER FURROW IRRIGATION FIELD
+    // (Exact perspective homage to user's photo in authentic editorial print style)
+    // =========================================================================
+    const SprinklerFieldEngraving = () => (
+      <svg viewBox="0 0 1200 560" className="w-full h-auto block select-none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          {/* Cloud Dither Pattern */}
+          <pattern id="cloud-hatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+            <circle cx="3" cy="3" r="1.5" fill="#9FA9EE" fillOpacity="0.75" />
+          </pattern>
+          {/* Mountain Line Hatch */}
+          <pattern id="mtn-hatch" x="0" y="0" width="8" height="4" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="2" x2="8" y2="2" stroke="#3E5B34" strokeWidth="1" strokeOpacity="0.6" />
+          </pattern>
+          {/* Tilled Earth Stipple Pattern */}
+          <pattern id="earth-stipple" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+            <rect x="0" y="0" width="2" height="2" fill="#D98B6F" fillOpacity="0.8" />
+            <rect x="3" y="3" width="2" height="2" fill="#16130F" fillOpacity="0.5" />
+          </pattern>
+          {/* Crop Foliage Dither Pattern */}
+          <pattern id="crop-dither" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+            <rect x="0" y="0" width="4" height="4" fill="#3E5B34" />
+            <rect x="4" y="4" width="4" height="4" fill="#A8BE86" />
+          </pattern>
+        </defs>
+
+        {/* Paper Canvas Sky */}
+        <rect width="1200" height="560" fill="#FBF6E6" />
+
+        {/* Distant Clouds in Almanac Periwinkle */}
+        <g fill="url(#cloud-hatch)">
+          <path d="M0,140 Q180,70 380,110 T800,90 T1200,120 L1200,200 L0,200 Z" />
+          <circle cx="240" cy="90" r="50" />
+          <circle cx="480" cy="70" r="65" />
+          <circle cx="760" cy="80" r="55" />
+          <circle cx="980" cy="100" r="45" />
+        </g>
+
+        {/* Distant Mountain Range Silhouettes (with horizontal hatching) */}
+        <path d="M0,190 L120,135 L280,165 L460,95 L610,145 L780,105 L960,155 L1120,120 L1200,160 L1200,240 L0,240 Z" fill="#9FA9EE" fillOpacity="0.35" />
+        <path d="M0,190 L120,135 L280,165 L460,95 L610,145 L780,105 L960,155 L1120,120 L1200,160" fill="none" stroke="#16130F" strokeWidth="2" />
+        
+        {/* Foothills & Distant Tree Line */}
+        <path d="M0,230 Q300,190 600,225 T1200,210 L1200,260 L0,260 Z" fill="url(#mtn-hatch)" />
+        <path d="M0,230 Q300,190 600,225 T1200,210" fill="none" stroke="#16130F" strokeWidth="1.5" />
+
+        {/* Far Field Green Rows */}
+        <rect x="0" y="240" width="1200" height="40" fill="#A8BE86" fillOpacity="0.5" />
+        <line x1="0" y1="260" x2="1200" y2="260" stroke="#16130F" strokeWidth="1" strokeDasharray="6 4" />
+        <line x1="0" y1="275" x2="1200" y2="275" stroke="#16130F" strokeWidth="1.2" />
+
+        {/* =========================================================================
+            PERSPECTIVE CROP RIDGES & CENTRAL FURROW
+            Vanishing point at center horizon: (600, 240)
+           ========================================================================= */}
+        
+        {/* Left Tilled Earth Mounds (Ridges) */}
+        <polygon points="600,240 0,330 0,560 520,560" fill="url(#earth-stipple)" />
+        {/* Right Tilled Earth Mounds (Ridges) */}
+        <polygon points="600,240 680,560 1200,560 1200,330" fill="url(#earth-stipple)" />
+
+        {/* Left Crop Foliage Rows (Potato / Leafy Greens) */}
+        <path d="M600,240 L80,560 L240,560 L600,240 Z" fill="url(#crop-dither)" fillOpacity="0.9" />
+        <path d="M600,240 L310,560 L490,560 L600,240 Z" fill="url(#crop-dither)" fillOpacity="0.95" />
+
+        {/* Right Crop Foliage Rows (Potato / Leafy Greens) */}
+        <path d="M600,240 L710,560 L890,560 L600,240 Z" fill="url(#crop-dither)" fillOpacity="0.95" />
+        <path d="M600,240 L960,560 L1120,560 L600,240 Z" fill="url(#crop-dither)" fillOpacity="0.9" />
+
+        {/* Handcrafted Leaf Rosettes along the foreground ridges */}
+        {[
+          { x: 380, y: 490, s: 1.4 }, { x: 440, y: 520, s: 1.6 }, { x: 320, y: 530, s: 1.5 },
+          { x: 820, y: 490, s: 1.4 }, { x: 760, y: 520, s: 1.6 }, { x: 880, y: 530, s: 1.5 },
+          { x: 420, y: 430, s: 1.1 }, { x: 780, y: 430, s: 1.1 },
+          { x: 460, y: 370, s: 0.8 }, { x: 740, y: 370, s: 0.8 },
+          { x: 490, y: 320, s: 0.6 }, { x: 710, y: 320, s: 0.6 }
+        ].map((leaf, i) => (
+          <g key={i} transform={`translate(${leaf.x}, ${leaf.y}) scale(${leaf.s})`} fill="#3E5B34" stroke="#16130F" strokeWidth="1.2">
+            <circle cx="0" cy="0" r="14" fill="#A8BE86" />
+            <path d="M0,0 C-10,-12 0,-22 8,-14 C12,-8 6,-2 0,0" fill="#3E5B34" />
+            <path d="M0,0 C10,-12 20,-6 14,2 C8,8 2,4 0,0" fill="#3E5B34" />
+            <path d="M0,0 C-8,10 -16,4 -10,-4 C-6,-10 -2,-4 0,0" fill="#3E5B34" />
+            <circle cx="0" cy="0" r="4" fill="#EDE6D4" />
+          </g>
+        ))}
+
+        {/* Central Furrow Canal (Water Channel) */}
+        <polygon points="600,240 540,560 660,560" fill="#A9C8EC" stroke="#16130F" strokeWidth="2" />
+        {/* Water Surface Reflections & Flow Ripples */}
+        {[270, 310, 360, 420, 480, 530].map((y, idx) => (
+          <line
+            key={idx}
+            x1={600 - (y - 240) * 0.15}
+            y1={y}
+            x2={600 + (y - 240) * 0.15}
+            y2={y}
+            stroke="#FBF6E6"
+            strokeWidth={1.8 + idx * 0.4}
+            strokeDasharray="8 6"
+          />
+        ))}
+
+        {/* Distant Sprinkler Risers down the canal */}
+        <line x1="600" y1="260" x2="600" y2="245" stroke="#16130F" strokeWidth="2" />
+        <circle cx="600" cy="245" r="2" fill="#16130F" />
+        <path d="M600,245 Q560,230 520,245 M600,245 Q640,230 680,245" fill="none" stroke="#A9C8EC" strokeWidth="1.5" strokeDasharray="3 3" />
+
+        <line x1="600" y1="310" x2="600" y2="285" stroke="#16130F" strokeWidth="3" />
+        <circle cx="600" cy="285" r="3" fill="#16130F" />
+        <path d="M600,285 Q540,265 480,290 M600,285 Q660,265 720,290" fill="none" stroke="#A9C8EC" strokeWidth="2" strokeDasharray="4 4" />
+
+        <line x1="600" y1="380" x2="600" y2="345" stroke="#16130F" strokeWidth="4" />
+        <circle cx="600" cy="345" r="4" fill="#16130F" />
+        <path d="M600,345 Q510,315 410,355 M600,345 Q690,315 790,355" fill="none" stroke="#A9C8EC" strokeWidth="2.5" strokeDasharray="5 5" />
+
+        {/* FOREGROUND HIGH-PRESSURE ROTARY SPRINKLER RISER */}
+        <g transform="translate(600, 420)">
+          {/* Base Anchor Pipe in the Furrow */}
+          <rect x="-8" y="0" width="16" height="70" fill="#16130F" stroke="#16130F" strokeWidth="2" />
+          <rect x="-12" y="15" width="24" height="8" rx="2" fill="#FAF4E2" stroke="#16130F" strokeWidth="1.5" />
+          {/* Sprinkler Head Mechanism */}
+          <circle cx="0" cy="0" r="10" fill="#16130F" />
+          <rect x="-14" y="-8" width="28" height="12" rx="3" fill="#3E5B34" stroke="#16130F" strokeWidth="1.5" />
+          <circle cx="0" cy="-2" r="4" fill="#D98B6F" />
+
+          {/* DYNAMIC RADIATING WATER MIST ARCS & SPRAY JETS */}
+          {/* Left Spray Arcs */}
+          <g stroke="#A9C8EC" strokeLinecap="round" fill="none">
+            <path d="M-8,-2 Q-140,-120 -380,-60" strokeWidth="4" strokeDasharray="6 6" />
+            <path d="M-8,-2 Q-160,-90 -450,-20" strokeWidth="3" strokeDasharray="5 5" />
+            <path d="M-8,-2 Q-130,-150 -320,-90" strokeWidth="2.5" strokeDasharray="4 6" />
+            <path d="M-8,-2 Q-200,-60 -520,30" strokeWidth="3.5" strokeDasharray="8 6" />
+            <path d="M-8,-2 Q-180,-30 -480,70" strokeWidth="2.5" strokeDasharray="4 5" />
+          </g>
+
+          {/* Right Spray Arcs */}
+          <g stroke="#A9C8EC" strokeLinecap="round" fill="none">
+            <path d="M8,-2 Q140,-120 380,-60" strokeWidth="4" strokeDasharray="6 6" />
+            <path d="M8,-2 Q160,-90 450,-20" strokeWidth="3" strokeDasharray="5 5" />
+            <path d="M8,-2 Q130,-150 320,-90" strokeWidth="2.5" strokeDasharray="4 6" />
+            <path d="M8,-2 Q200,-60 520,30" strokeWidth="3.5" strokeDasharray="8 6" />
+            <path d="M8,-2 Q180,-30 480,70" strokeWidth="2.5" strokeDasharray="4 5" />
+          </g>
+
+          {/* Fine Droplet Particle Dispersion Cloud */}
+          {[
+            { dx: -180, dy: -80, r: 2.5 }, { dx: -260, dy: -60, r: 3 }, { dx: -340, dy: -40, r: 2.2 },
+            { dx: -220, dy: -100, r: 2 }, { dx: -300, dy: -80, r: 2.8 }, { dx: -420, dy: -10, r: 3.2 },
+            { dx: 180, dy: -80, r: 2.5 }, { dx: 260, dy: -60, r: 3 }, { dx: 340, dy: -40, r: 2.2 },
+            { dx: 220, dy: -100, r: 2 }, { dx: 300, dy: -80, r: 2.8 }, { dx: 420, dy: -10, r: 3.2 },
+            { dx: -120, dy: -40, r: 2 }, { dx: 120, dy: -40, r: 2 }
+          ].map((d, idx) => (
+            <circle key={idx} cx={d.dx} cy={d.dy} r={d.r} fill="#A9C8EC" stroke="#16130F" strokeWidth="0.8" />
+          ))}
+        </g>
+
+        {/* ALMANAC BORDER FRAME & LETTERPRESS NOTATIONS */}
+        <rect x="10" y="10" width="1180" height="540" fill="none" stroke="#16130F" strokeWidth="2" />
+        <rect x="16" y="16" width="1168" height="528" fill="none" stroke="#16130F" strokeWidth="0.8" strokeDasharray="4 4" />
+
+        {/* Top Ledger Ribbon */}
+        <rect x="360" y="8" width="480" height="28" fill="#FBF6E6" stroke="#16130F" strokeWidth="1.5" />
+        <text x="600" y="27" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize="10" fontWeight="bold" letterSpacing="2" fill="#16130F">
+          FIG. 1.4 · IN-SITU ROOT-ZONE SPRINKLER & FURROW IRRIGATION
+        </text>
+
+        {/* Bottom Metadata Ribbon */}
+        <rect x="310" y="525" width="580" height="28" fill="#FAF4E2" stroke="#16130F" strokeWidth="1.5" />
+        <text x="600" y="543" textAnchor="middle" fontFamily="Newsreader, serif" fontSize="13" fontStyle="italic" fill="#16130F">
+          Measured continuous discharge: 32.4 L/min · 1.5 Bar · Loamy-clay ridge saturation
+        </text>
+      </svg>
+    );
+
+    // =========================================================================
+    // EDITORIAL IN-SITU SPRINKLER & FURROW IRRIGATION PLATE
+    // Features 3 toggle modes:
+    // 1. [ ENGRAVED ALMANAC PLATE ] (Handcrafted vector engraving)
+    // 2. [ DITHERED HALFTONE SCREEN ] (Filtered duotone dot-screen)
+    // 3. [ NATURAL FIELD PHOTO ] (Raw camera field photograph)
+    // =========================================================================
+    const EditorialIrrigationPlate = () => {
+      const [viewMode, setViewMode] = useState("engraved"); // "engraved" | "halftone" | "natural"
+
+      return (
+        <div className="w-full bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-5 sm:p-7 shadow-sm space-y-4">
+          {/* Header Bar */}
+          <div className="flex flex-wrap justify-between items-center gap-3 border-b-2 border-[#16130F]/15 pb-4">
+            <div className="flex items-center gap-2.5">
+              <span className="w-3 h-3 rounded-full bg-[#3E5B34] animate-pulse" />
+              <div>
+                <span className="font-mono text-xs uppercase tracking-widest text-[#3E5B34] font-bold block">
+                  PLATE 1.4 &bull; IN-SITU ROOT-ZONE SPRINKLER & FURROW TELEMETRY
+                </span>
+                <span className="font-serif text-sm text-[#16130F]/70 italic hidden sm:inline">
+                  Agricultural survey of controlled furrow infiltration and mist spray dynamics
+                </span>
+              </div>
+            </div>
+
+            {/* 3-Way Mode Switcher */}
+            <div className="flex items-center gap-1.5 bg-[#FBF6E6] p-1 rounded-full border border-[#16130F]/30 font-mono text-[11px] font-bold">
+              <button
+                type="button"
+                onClick={() => setViewMode("engraved")}
+                className={`px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${viewMode === "engraved" ? "bg-[#0E0C0B] text-[#FBF6E6] shadow" : "text-[#16130F]/70 hover:text-[#16130F]"}`}
+              >
+                <IconWheat className="w-3.5 h-3.5 text-[#A8BE86]" />
+                <span>Engraved Plate</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("halftone")}
+                className={`px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${viewMode === "halftone" ? "bg-[#0E0C0B] text-[#FBF6E6] shadow" : "text-[#16130F]/70 hover:text-[#16130F]"}`}
+              >
+                <IconWaterDrop className="w-3.5 h-3.5 text-[#A9C8EC]" />
+                <span>Halftone Screen</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("natural")}
+                className={`px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${viewMode === "natural" ? "bg-[#0E0C0B] text-[#FBF6E6] shadow" : "text-[#16130F]/70 hover:text-[#16130F]"}`}
+              >
+                <IconSun className="w-3.5 h-3.5 text-[#E7B94A]" />
+                <span>Field Photo</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Plate Display Canvas */}
+          <div className="relative rounded-2xl overflow-hidden border-2 border-[#16130F] bg-[#FBF6E6] shadow-inner select-none">
+            {viewMode === "engraved" && (
+              <div className="w-full bg-[#FBF6E6]">
+                <SprinklerFieldEngraving />
+              </div>
+            )}
+
+            {viewMode === "halftone" && (
+              <div className="relative bg-[#16130F]">
+                <img
+                  src="irrigation_field.png"
+                  alt="Agricultural Sprinkler Halftone"
+                  className="w-full max-h-[500px] object-cover filter contrast-[1.3] brightness-[0.95] sepia-[0.35]"
+                />
+                <div
+                  className="absolute inset-0 pointer-events-none mix-blend-multiply opacity-40"
+                  style={{
+                    backgroundImage: "radial-gradient(circle, #16130F 1.5px, transparent 1.5px)",
+                    backgroundSize: "5px 5px",
+                  }}
+                />
+                <div className="absolute inset-0 border-2 border-[#16130F] pointer-events-none" />
+              </div>
+            )}
+
+            {viewMode === "natural" && (
+              <div className="relative bg-[#16130F]">
+                <img
+                  src="irrigation_field.png"
+                  alt="Field Sprinklers Natural"
+                  className="w-full max-h-[500px] object-cover"
+                />
+              </div>
+            )}
+
+            {/* Corner Monospace Telemetry Badges */}
+            <div className="absolute top-3 left-3 bg-[#FAF4E2]/95 backdrop-blur border border-[#16130F] px-3.5 py-1.5 rounded-full font-mono text-[10px] font-bold text-[#16130F] shadow flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#3E5B34]" />
+              <span>BOREWELL RELAY: ENERGIZED &bull; 32.4 L/MIN</span>
+            </div>
+
+            <div className="absolute top-3 right-3 bg-[#FAF4E2]/95 backdrop-blur border border-[#16130F] px-3.5 py-1.5 rounded-full font-mono text-[10px] font-bold text-[#16130F] shadow flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#A9C8EC]" />
+              <span>ROTARY ARCS: 4.8M RADIUS MIST</span>
+            </div>
+
+            <div className="absolute bottom-3 left-3 bg-[#FAF4E2]/95 backdrop-blur border border-[#16130F] px-3.5 py-1.5 rounded-full font-mono text-[10px] font-bold text-[#16130F] shadow flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#D98B6F]" />
+              <span>PLOT #1 &bull; FURROW ROOT INFILTRATION</span>
+            </div>
+
+            <div className="absolute bottom-3 right-3 hidden sm:flex bg-[#FAF4E2]/95 backdrop-blur border border-[#16130F] px-3.5 py-1.5 rounded-full font-mono text-[10px] font-bold text-[#16130F] shadow items-center gap-1.5">
+              <span>CLOSED-LOOP HYSTERESIS ACTIVE</span>
+            </div>
+          </div>
+
+          {/* Editorial Caption Footnote */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-1 font-mono text-xs">
+            <div className="font-serif text-base text-[#16130F] leading-snug">
+              Rotary misting nozzles discharging over furrow crop rows &bull;{" "}
+              <span className="italic text-[#3E5B34]">direct infiltration to root-depth 15–25 cm</span>
+            </div>
+            <div className="text-[10px] text-[#16130F]/70 uppercase tracking-wider flex-shrink-0 font-bold">
+              EXP-PLOT 1 &bull; BOREWELL MOTOR RELAY #01 &bull; IN-SITU TELEMETRY
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // =========================================================================
+    // 6 DISTINCT PAGE-SPECIFIC AGRICULTURAL ENGRAVINGS
+    // (Used as atmospheric background plates & card watermarks)
+    // =========================================================================
+
+    // Plate 2.1: Deep Borewell Pump House & Actuator Manifold (Controller)
+    const BorewellPumpHouseEngraving = ({ className = "w-full h-auto" }) => (
+      <svg viewBox="0 0 1200 480" className={className} xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="ph-brick" x="0" y="0" width="16" height="8" patternUnits="userSpaceOnUse">
+            <rect width="16" height="8" fill="#FAF4E2" />
+            <rect x="0" y="0" width="16" height="4" fill="#D98B6F" fillOpacity="0.4" />
+            <line x1="0" y1="4" x2="16" y2="4" stroke="#16130F" strokeWidth="0.8" strokeOpacity="0.4" />
+            <line x1="8" y1="0" x2="8" y2="4" stroke="#16130F" strokeWidth="0.8" strokeOpacity="0.4" />
+            <line x1="16" y1="4" x2="16" y2="8" stroke="#16130F" strokeWidth="0.8" strokeOpacity="0.4" />
+          </pattern>
+          <pattern id="ph-roof" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="12" y2="0" stroke="#D98B6F" strokeWidth="2.5" />
+            <line x1="0" y1="6" x2="12" y2="6" stroke="#16130F" strokeWidth="1" strokeOpacity="0.3" />
+          </pattern>
+        </defs>
+        <rect width="1200" height="480" fill="#FBF6E6" />
+        <path d="M0,180 Q300,140 600,165 T1200,150 L1200,320 L0,320 Z" fill="#9FA9EE" fillOpacity="0.15" />
+        <rect x="0" y="280" width="1200" height="200" fill="#FAF4E2" />
+        <line x1="0" y1="280" x2="1200" y2="280" stroke="#16130F" strokeWidth="2" />
+        <g stroke="#3E5B34" strokeWidth="1.5" fill="none">
+          {[80, 180, 320, 960, 1080].map((x, i) => (
+            <path key={i} d={`M${x},280 C${x-10},230 ${x+15},200 ${x},180 M${x},180 Q${x-30},160 ${x-45},175 M${x},180 Q${x+30},160 ${x+45},175 M${x},180 Q${x-15},145 ${x-25},140 M${x},180 Q${x+15},145 ${x+25},140`} />
+          ))}
+        </g>
+        <g transform="translate(140, 110)">
+          <polygon points="120,-30 290,-90 460,-30" fill="url(#ph-roof)" stroke="#16130F" strokeWidth="2.5" />
+          <rect x="140" y="-30" width="300" height="200" fill="url(#ph-brick)" stroke="#16130F" strokeWidth="2.5" />
+          <rect x="230" y="30" width="90" height="140" rx="4" fill="#16130F" />
+          <rect x="240" y="40" width="70" height="130" fill="#FAF4E2" stroke="#16130F" strokeWidth="1.5" />
+          <rect x="160" y="20" width="45" height="50" rx="3" fill="#A9C8EC" stroke="#16130F" strokeWidth="1.5" />
+          <rect x="375" y="20" width="45" height="50" rx="3" fill="#A9C8EC" stroke="#16130F" strokeWidth="1.5" />
+          <line x1="290" y1="-90" x2="290" y2="-120" stroke="#16130F" strokeWidth="3" />
+          <circle cx="290" cy="-120" r="4" fill="#D98B6F" />
+          <path d="M290,-120 L275,-105 M290,-120 L305,-105" stroke="#16130F" strokeWidth="2" />
+        </g>
+        <g transform="translate(620, 200)">
+          <rect x="-40" y="70" width="280" height="20" rx="3" fill="#D98B6F" stroke="#16130F" strokeWidth="2" />
+          <rect x="-20" y="-20" width="130" height="90" rx="8" fill="#3E5B34" stroke="#16130F" strokeWidth="2.5" />
+          {[0, 1, 2, 3, 4, 5, 6].map(i => (
+            <line key={i} x1={-10 + i * 16} y1="-10" x2={-10 + i * 16} y2="60" stroke="#FAF4E2" strokeWidth="2" />
+          ))}
+          <rect x="20" y="-45" width="50" height="25" rx="3" fill="#FAF4E2" stroke="#16130F" strokeWidth="2" />
+          <text x="45" y="-28" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize="8" fontWeight="bold" fill="#16130F">RELAY</text>
+          <circle cx="155" cy="25" r="45" fill="#FAF4E2" stroke="#16130F" strokeWidth="2.5" />
+          <circle cx="155" cy="25" r="30" fill="#3E5B34" fillOpacity="0.3" stroke="#16130F" strokeWidth="1.5" />
+          <circle cx="155" cy="25" r="8" fill="#16130F" />
+          <path d="M155,-20 L155,-70 L280,-70 L280,30" fill="none" stroke="#16130F" strokeWidth="18" strokeLinecap="square" />
+          <path d="M155,-20 L155,-70 L280,-70 L280,30" fill="none" stroke="#A9C8EC" strokeWidth="12" />
+          <circle cx="215" cy="-85" r="16" fill="#FAF4E2" stroke="#16130F" strokeWidth="2" />
+          <line x1="215" y1="-85" x2="225" y2="-92" stroke="#D98B6F" strokeWidth="2" />
+          <line x1="250" y1="-70" x2="250" y2="-100" stroke="#16130F" strokeWidth="4" />
+          <circle cx="250" cy="-100" r="10" fill="#D98B6F" stroke="#16130F" strokeWidth="2" />
+          <path d="M280,30 C280,90 320,130 460,140" fill="none" stroke="#A9C8EC" strokeWidth="28" strokeLinecap="round" />
+          <path d="M280,30 C280,90 320,130 460,140" fill="none" stroke="#16130F" strokeWidth="2" strokeDasharray="6 4" />
+          {[60, 90, 120].map((d, i) => (
+            <circle key={i} cx={310 + i * 40} cy={100 + i * 15} r={4 + i} fill="#FBF6E6" stroke="#A9C8EC" strokeWidth="2" />
+          ))}
+        </g>
+        <rect x="10" y="10" width="1180" height="460" fill="none" stroke="#16130F" strokeWidth="2" />
+        <rect x="330" y="8" width="540" height="28" fill="#FBF6E6" stroke="#16130F" strokeWidth="1.5" />
+        <text x="600" y="27" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize="10" fontWeight="bold" letterSpacing="2" fill="#16130F">
+          PLATE 2.1 · AGRICULTURAL BOREWELL PUMP HOUSE & MOTOR ACTUATOR
+        </text>
+      </svg>
+    );
+
+    // Plate 3.0: Cadastral Survey & Terraced Landscape (Cockpit Dashboard)
+    const CadastralSurveyEngraving = ({ className = "w-full h-auto" }) => (
+      <svg viewBox="0 0 1200 480" className={className} xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="cs-hatch" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
+            <line x1="0" y1="0" x2="0" y2="8" stroke="#3E5B34" strokeWidth="1.5" strokeOpacity="0.4" />
+          </pattern>
+          <pattern id="cs-clay" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+            <circle cx="3" cy="3" r="1.2" fill="#D98B6F" fillOpacity="0.8" />
+          </pattern>
+        </defs>
+        <rect width="1200" height="480" fill="#FBF6E6" />
+        <path d="M0,160 Q300,100 650,140 T1200,110 L1200,240 L0,240 Z" fill="#9FA9EE" fillOpacity="0.2" />
+        <path d="M0,230 Q280,180 580,210 T1200,190 L1200,320 L0,320 Z" fill="url(#cs-clay)" />
+        <path d="M0,310 Q320,260 680,290 T1200,270 L1200,480 L0,480 Z" fill="url(#cs-hatch)" />
+        <path d="M0,160 Q300,100 650,140 T1200,110" fill="none" stroke="#16130F" strokeWidth="2" />
+        <path d="M0,230 Q280,180 580,210 T1200,190" fill="none" stroke="#16130F" strokeWidth="2" />
+        <path d="M0,310 Q320,260 680,290 T1200,270" fill="none" stroke="#16130F" strokeWidth="2" />
+        <path d="M380,125 C420,220 390,320 440,480" fill="none" stroke="#A9C8EC" strokeWidth="16" />
+        <path d="M380,125 C420,220 390,320 440,480" fill="none" stroke="#16130F" strokeWidth="1.5" strokeDasharray="4 4" />
+        <path d="M410,240 C520,250 640,230 760,260" fill="none" stroke="#A9C8EC" strokeWidth="10" />
+        <path d="M410,240 C520,250 640,230 760,260" fill="none" stroke="#16130F" strokeWidth="1.5" strokeDasharray="4 4" />
+        <g fontFamily="JetBrains Mono, monospace" fontSize="10" fontWeight="bold" fill="#16130F">
+          <rect x="80" y="245" width="160" height="50" rx="4" fill="#FAF4E2" stroke="#16130F" strokeWidth="1.5" />
+          <text x="160" y="268" textAnchor="middle">PLOT 1 · PADDY</text>
+          <text x="160" y="284" textAnchor="middle" fontSize="8" fill="#3E5B34">1.5 ACRES · VWC 42%</text>
+
+          <rect x="490" y="255" width="160" height="50" rx="4" fill="#FAF4E2" stroke="#16130F" strokeWidth="1.5" />
+          <text x="570" y="278" textAnchor="middle">PLOT 2 · GREENS</text>
+          <text x="570" y="294" textAnchor="middle" fontSize="8" fill="#3E5B34">0.8 ACRES · VWC 38%</text>
+
+          <rect x="860" y="225" width="160" height="50" rx="4" fill="#FAF4E2" stroke="#16130F" strokeWidth="1.5" />
+          <text x="940" y="248" textAnchor="middle">PLOT 3 · WHEAT</text>
+          <text x="940" y="264" textAnchor="middle" fontSize="8" fill="#3E5B34">2.2 ACRES · VWC 54%</text>
+        </g>
+        <g transform="translate(680, 80)">
+          <line x1="0" y1="90" x2="0" y2="0" stroke="#16130F" strokeWidth="4" />
+          <line x1="-15" y1="90" x2="0" y2="50" stroke="#16130F" strokeWidth="2" />
+          <line x1="15" y1="90" x2="0" y2="50" stroke="#16130F" strokeWidth="2" />
+          <rect x="-12" y="20" width="24" height="16" fill="#FAF4E2" stroke="#16130F" strokeWidth="1.5" />
+          <circle cx="0" cy="0" r="4" fill="#3E5B34" />
+          <circle cx="0" cy="0" r="18" fill="none" stroke="#9FA9EE" strokeWidth="1.8" strokeDasharray="4 3" />
+          <circle cx="0" cy="0" r="32" fill="none" stroke="#9FA9EE" strokeWidth="1.5" strokeDasharray="6 4" />
+          <circle cx="0" cy="0" r="48" fill="none" stroke="#9FA9EE" strokeWidth="1.2" strokeDasharray="8 5" />
+        </g>
+        <g transform="translate(1080, 70)">
+          <circle cx="0" cy="0" r="28" fill="#FAF4E2" stroke="#16130F" strokeWidth="2" />
+          <polygon points="0,-24 5,-6 0,0" fill="#16130F" />
+          <polygon points="0,-24 -5,-6 0,0" fill="#FAF4E2" stroke="#16130F" strokeWidth="1" />
+          <polygon points="0,24 5,6 0,0" fill="#D98B6F" />
+          <polygon points="0,24 -5,6 0,0" fill="#FAF4E2" stroke="#16130F" strokeWidth="1" />
+          <polygon points="24,0 6,5 0,0" fill="#16130F" />
+          <polygon points="-24,0 -6,-5 0,0" fill="#16130F" />
+          <text x="0" y="-28" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize="9" fontWeight="bold">N</text>
+        </g>
+        <rect x="10" y="10" width="1180" height="460" fill="none" stroke="#16130F" strokeWidth="2" />
+        <rect x="330" y="8" width="540" height="28" fill="#FBF6E6" stroke="#16130F" strokeWidth="1.5" />
+        <text x="600" y="27" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize="10" fontWeight="bold" letterSpacing="2" fill="#16130F">
+          PLATE 3.0 · CADASTRAL TELEMETRY SURVEY & MULTI-PLOT TERRACES
+        </text>
+      </svg>
+    );
+
+    // Plate 4.2: Botanical Soil Stratigraphy (Add Field Page)
+    const SoilStratigraphyEngraving = ({ className = "w-full h-auto" }) => (
+      <svg viewBox="0 0 1200 480" className={className} xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="st-top" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+            <circle cx="3" cy="3" r="1.5" fill="#16130F" fillOpacity="0.5" />
+          </pattern>
+          <pattern id="st-clay" x="0" y="0" width="10" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(25)">
+            <line x1="0" y1="0" x2="10" y2="0" stroke="#D98B6F" strokeWidth="2" strokeOpacity="0.8" />
+          </pattern>
+          <pattern id="st-deep" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+            <rect x="0" y="0" width="4" height="4" fill="#3E5B34" fillOpacity="0.3" />
+            <rect x="4" y="4" width="4" height="4" fill="#16130F" fillOpacity="0.3" />
+          </pattern>
+        </defs>
+        <rect width="1200" height="480" fill="#FBF6E6" />
+        <rect x="0" y="130" width="1200" height="90" fill="url(#st-top)" />
+        <rect x="0" y="220" width="1200" height="130" fill="url(#st-clay)" />
+        <rect x="0" y="350" width="1200" height="130" fill="url(#st-deep)" />
+        <line x1="0" y1="130" x2="1200" y2="130" stroke="#16130F" strokeWidth="3" />
+        <line x1="0" y1="220" x2="1200" y2="220" stroke="#16130F" strokeWidth="1.8" strokeDasharray="6 4" />
+        <line x1="0" y1="350" x2="1200" y2="350" stroke="#16130F" strokeWidth="1.8" strokeDasharray="6 4" />
+        <g stroke="#3E5B34" strokeWidth="2" fill="none">
+          {[120, 240, 380, 520, 680, 840, 980, 1100].map((x, i) => (
+            <g key={i} transform={`translate(${x}, 130)`}>
+              <path d="M0,0 Q-10,-40 -25,-60 Q-5,-45 0,0" fill="#A8BE86" />
+              <path d="M0,0 Q10,-40 25,-60 Q5,-45 0,0" fill="#A8BE86" />
+              <path d="M0,0 Q0,-50 0,-75" />
+              <circle cx="0" cy="-75" r="4" fill="#E7B94A" />
+            </g>
+          ))}
+        </g>
+        <line x1="0" y1="100" x2="1200" y2="100" stroke="#16130F" strokeWidth="4" />
+        {[180, 310, 450, 590, 740, 890, 1040].map((x, i) => (
+          <g key={i} transform={`translate(${x}, 104)`}>
+            <circle cx="0" cy="12" r="3" fill="#A9C8EC" stroke="#16130F" strokeWidth="1" />
+            <circle cx="0" cy="22" r="3.5" fill="#A9C8EC" stroke="#16130F" strokeWidth="1" />
+          </g>
+        ))}
+        <g stroke="#16130F" strokeWidth="1.5" fill="none" opacity="0.85">
+          {[120, 240, 380, 680, 840, 1100].map((x, i) => (
+            <path key={i} d={`M${x},130 Q${x-15},180 ${x-30},230 T${x-20},320 M${x},130 Q${x+15},180 ${x+30},230 T${x+40},310 M${x},130 Q${x},190 ${x+5},260 T${x},360`} />
+          ))}
+        </g>
+        <g transform="translate(520, 80)">
+          <rect x="-15" y="-30" width="30" height="30" rx="4" fill="#FAF4E2" stroke="#16130F" strokeWidth="2" />
+          <circle cx="0" cy="-15" r="4" fill="#3E5B34" />
+          <line x1="0" y1="0" x2="0" y2="240" stroke="#16130F" strokeWidth="8" />
+          <line x1="-8" y1="60" x2="-8" y2="230" stroke="#D98B6F" strokeWidth="3" />
+          <line x1="8" y1="60" x2="8" y2="230" stroke="#D98B6F" strokeWidth="3" />
+          {[30, 80, 140, 200].map((y, idx) => (
+            <line key={idx} x1="-14" y1={y} x2="14" y2={y} stroke="#FBF6E6" strokeWidth="2" />
+          ))}
+        </g>
+        <g transform="translate(40, 130)" fontFamily="JetBrains Mono, monospace" fontSize="9" fontWeight="bold" fill="#16130F">
+          <line x1="0" y1="0" x2="0" y2="330" stroke="#16130F" strokeWidth="2" />
+          <line x1="0" y1="0" x2="15" y2="0" stroke="#16130F" strokeWidth="2" />
+          <text x="20" y="4">0 CM · SURFACE</text>
+          <line x1="0" y1="90" x2="15" y2="90" stroke="#16130F" strokeWidth="2" />
+          <text x="20" y="94">15 CM · HORIZON A (HUMUS)</text>
+          <line x1="0" y1="220" x2="15" y2="220" stroke="#16130F" strokeWidth="2" />
+          <text x="20" y="224">30 CM · HORIZON B (ROOT RETENTION)</text>
+          <line x1="0" y1="330" x2="15" y2="330" stroke="#16130F" strokeWidth="2" />
+          <text x="20" y="334">45 CM · SUB-ROOT DRAINAGE</text>
+        </g>
+        <rect x="10" y="10" width="1180" height="460" fill="none" stroke="#16130F" strokeWidth="2" />
+        <rect x="330" y="8" width="540" height="28" fill="#FBF6E6" stroke="#16130F" strokeWidth="1.5" />
+        <text x="600" y="27" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize="10" fontWeight="bold" letterSpacing="2" fill="#16130F">
+          PLATE 4.2 · ROOT-ZONE PEDOLOGY & CALIBRATION STRATA
+        </text>
+      </svg>
+    );
+
+    // Plate 5.3: Agricultural Meteorology Observatory (Weather Station Page)
+    const MeteorologyObservatoryEngraving = ({ className = "w-full h-auto" }) => (
+      <svg viewBox="0 0 1200 480" className={className} xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="mo-cloud" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+            <circle cx="4" cy="4" r="2.5" fill="#9FA9EE" fillOpacity="0.8" />
+          </pattern>
+          <pattern id="mo-rain" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
+            <line x1="0" y1="0" x2="0" y2="10" stroke="#A9C8EC" strokeWidth="2" />
+          </pattern>
+        </defs>
+        <rect width="1200" height="480" fill="#FBF6E6" />
+        <g transform="translate(220, 110)">
+          <circle cx="0" cy="0" r="45" fill="#E7B94A" fillOpacity="0.4" stroke="#16130F" strokeWidth="2" />
+          {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(deg => (
+            <line key={deg} x1={55 * Math.cos(deg * Math.PI / 180)} y1={55 * Math.sin(deg * Math.PI / 180)} x2={85 * Math.cos(deg * Math.PI / 180)} y2={85 * Math.sin(deg * Math.PI / 180)} stroke="#16130F" strokeWidth="1.8" />
+          ))}
+        </g>
+        <g fill="url(#mo-cloud)">
+          <path d="M180,180 C240,80 390,60 480,120 C540,50 690,40 760,110 C830,60 960,70 1020,150 L1200,160 L1200,320 L180,320 Z" />
+        </g>
+        <path d="M180,180 C240,80 390,60 480,120 C540,50 690,40 760,110 C830,60 960,70 1020,150 L1200,160" fill="none" stroke="#16130F" strokeWidth="2.5" />
+        <rect x="420" y="160" width="780" height="180" fill="url(#mo-rain)" opacity="0.6" />
+        <path d="M0,320 Q300,240 600,285 T1200,260 L1200,480 L0,480 Z" fill="#3E5B34" fillOpacity="0.3" stroke="#16130F" strokeWidth="2" />
+        <g transform="translate(240, 230)">
+          <line x1="0" y1="180" x2="0" y2="0" stroke="#16130F" strokeWidth="4" />
+          <line x1="-30" y1="40" x2="30" y2="40" stroke="#16130F" strokeWidth="2.5" />
+          <line x1="0" y1="20" x2="0" y2="60" stroke="#16130F" strokeWidth="2.5" />
+          <text x="-40" y="44" fontFamily="JetBrains Mono, monospace" fontSize="10" fontWeight="bold">W</text>
+          <text x="36" y="44" fontFamily="JetBrains Mono, monospace" fontSize="10" fontWeight="bold">E</text>
+          <text x="-4" y="14" fontFamily="JetBrains Mono, monospace" fontSize="10" fontWeight="bold">N</text>
+          <text x="-4" y="74" fontFamily="JetBrains Mono, monospace" fontSize="10" fontWeight="bold">S</text>
+          <g transform="translate(0, -10)">
+            <polygon points="-35,0 35,0 20,-10 35,0 20,10" fill="none" stroke="#16130F" strokeWidth="2.5" />
+            <path d="M-15,-5 C-20,-25 0,-35 10,-20 C18,-35 28,-15 15,0 Z" fill="#FAF4E2" stroke="#16130F" strokeWidth="2" />
+            <circle cx="8" cy="-22" r="2" fill="#D98B6F" />
+          </g>
+        </g>
+        <g transform="translate(940, 240)">
+          <line x1="0" y1="180" x2="0" y2="0" stroke="#16130F" strokeWidth="4" />
+          <circle cx="0" cy="0" r="6" fill="#16130F" />
+          <line x1="-30" y1="0" x2="30" y2="0" stroke="#16130F" strokeWidth="2" />
+          <circle cx="-30" cy="0" r="10" fill="#FAF4E2" stroke="#16130F" strokeWidth="1.5" />
+          <circle cx="30" cy="0" r="10" fill="#FAF4E2" stroke="#16130F" strokeWidth="1.5" />
+          <rect x="40" y="60" width="28" height="65" rx="3" fill="#FAF4E2" stroke="#16130F" strokeWidth="2" />
+          <rect x="42" y="90" width="24" height="33" fill="#A9C8EC" stroke="#16130F" strokeWidth="1" />
+          {[70, 80, 90, 100, 110].map((y, idx) => (
+            <line key={idx} x1="40" y1={y} x2="48" y2={y} stroke="#16130F" strokeWidth="1" />
+          ))}
+          <text x="54" y="138" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize="8" fontWeight="bold">GAUGE</text>
+        </g>
+        <rect x="10" y="10" width="1180" height="460" fill="none" stroke="#16130F" strokeWidth="2" />
+        <rect x="330" y="8" width="540" height="28" fill="#FBF6E6" stroke="#16130F" strokeWidth="1.5" />
+        <text x="600" y="27" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize="10" fontWeight="bold" letterSpacing="2" fill="#16130F">
+          PLATE 5.3 · HYPERLOCAL AGRICULTURAL METEOROLOGY OBSERVATORY
+        </text>
+      </svg>
+    );
+
+    // Plate 6.1: Krishi Vigyan Kendra Extension Hub (Helpdesk & Contact Page)
+    const KrishiAgronomyDeskEngraving = ({ className = "w-full h-auto" }) => (
+      <svg viewBox="0 0 1200 480" className={className} xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="ka-leaves" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+            <circle cx="4" cy="4" r="2.5" fill="#3E5B34" fillOpacity="0.5" />
+          </pattern>
+        </defs>
+        <rect width="1200" height="480" fill="#FBF6E6" />
+        <rect x="0" y="270" width="1200" height="210" fill="#FAF4E2" />
+        <line x1="0" y1="270" x2="1200" y2="270" stroke="#16130F" strokeWidth="2" />
+        <g transform="translate(180, 270)">
+          <path d="M0,0 C-20,-80 -40,-160 -10,-220 C20,-160 10,-80 0,0" fill="#D98B6F" stroke="#16130F" strokeWidth="2.5" />
+          <circle cx="-10" cy="-220" r="90" fill="url(#ka-leaves)" stroke="#16130F" strokeWidth="2" />
+          <circle cx="-70" cy="-190" r="60" fill="url(#ka-leaves)" stroke="#16130F" strokeWidth="1.5" />
+          <circle cx="50" cy="-180" r="70" fill="url(#ka-leaves)" stroke="#16130F" strokeWidth="1.5" />
+        </g>
+        <g transform="translate(360, 130)">
+          <polygon points="40,20 200,-30 360,20" fill="#D98B6F" stroke="#16130F" strokeWidth="2" />
+          <rect x="60" y="20" width="280" height="120" fill="#FAF4E2" stroke="#16130F" strokeWidth="2" />
+          <rect x="80" y="50" width="45" height="55" fill="#A9C8EC" stroke="#16130F" strokeWidth="1.5" />
+          <rect x="275" y="50" width="45" height="55" fill="#A9C8EC" stroke="#16130F" strokeWidth="1.5" />
+          <rect x="175" y="40" width="50" height="100" fill="#16130F" />
+          <rect x="180" y="45" width="40" height="95" fill="#FAF4E2" stroke="#16130F" strokeWidth="1" />
+          <rect x="110" y="8" width="180" height="22" fill="#FBF6E6" stroke="#16130F" strokeWidth="1.5" />
+          <text x="200" y="23" textAnchor="middle" fontFamily="Newsreader, serif" fontSize="10" fontWeight="bold">KRISHI VIGYAN KENDRA</text>
+        </g>
+        <g transform="translate(740, 230)">
+          <rect x="0" y="0" width="160" height="40" rx="3" fill="#FAF4E2" stroke="#16130F" strokeWidth="2" />
+          <line x1="20" y1="40" x2="20" y2="70" stroke="#16130F" strokeWidth="3" />
+          <line x1="140" y1="40" x2="140" y2="70" stroke="#16130F" strokeWidth="3" />
+          <line x1="40" y1="-25" x2="40" y2="0" stroke="#16130F" strokeWidth="3" />
+          <line x1="30" y1="-25" x2="50" y2="-25" stroke="#16130F" strokeWidth="3" />
+          <rect x="70" y="-18" width="16" height="18" fill="#D98B6F" stroke="#16130F" strokeWidth="1.5" />
+          <rect x="95" y="-22" width="16" height="22" fill="#A9C8EC" stroke="#16130F" strokeWidth="1.5" />
+          <rect x="120" y="-12" width="25" height="12" fill="#FAF4E2" stroke="#16130F" strokeWidth="1.5" />
+          <text x="132" y="-3" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize="6">LOG</text>
+        </g>
+        <g transform="translate(940, 260)">
+          <rect x="0" y="0" width="180" height="60" fill="#FAF4E2" stroke="#16130F" strokeWidth="2" />
+          <path d="M40,20 C80,50 120,70 160,110" fill="none" stroke="#A9C8EC" strokeWidth="20" />
+          <line x1="60" y1="-10" x2="60" y2="40" stroke="#16130F" strokeWidth="3" />
+          <circle cx="60" cy="-10" r="8" fill="#D98B6F" stroke="#16130F" strokeWidth="2" />
+        </g>
+        <rect x="10" y="10" width="1180" height="460" fill="none" stroke="#16130F" strokeWidth="2" />
+        <rect x="330" y="8" width="540" height="28" fill="#FBF6E6" stroke="#16130F" strokeWidth="1.5" />
+        <text x="600" y="27" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize="10" fontWeight="bold" letterSpacing="2" fill="#16130F">
+          PLATE 6.1 · KRISHI VIGYAN KENDRA ADVISORY HUB & TELEMETRY DESK
+        </text>
+      </svg>
+    );
+
+    // Plate 7.4: Heritage Harvest Granary & Farmer Stewardship Seal (Auth Page)
+    const HarvestGranaryEngraving = ({ className = "w-full h-auto" }) => (
+      <svg viewBox="0 0 1200 480" className={className} xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="hg-sheaf" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="0" x2="10" y2="10" stroke="#E7B94A" strokeWidth="2" strokeOpacity="0.5" />
+          </pattern>
+        </defs>
+        <rect width="1200" height="480" fill="#FBF6E6" />
+        <rect x="0" y="270" width="1200" height="210" fill="#FAF4E2" />
+        <line x1="0" y1="270" x2="1200" y2="270" stroke="#16130F" strokeWidth="2" />
+        <g transform="translate(180, 110)">
+          <polygon points="60,20 220,-40 380,20" fill="#D98B6F" stroke="#16130F" strokeWidth="2.5" />
+          <rect x="80" y="20" width="280" height="140" fill="#FAF4E2" stroke="#16130F" strokeWidth="2.5" />
+          {[40, 60, 80, 100, 120, 140].map((y, i) => (
+            <line key={i} x1="80" y1={y} x2="360" y2={y} stroke="#16130F" strokeWidth="1" strokeOpacity="0.4" />
+          ))}
+          <rect x="180" y="60" width="80" height="100" fill="#16130F" />
+          <circle cx="220" cy="30" r="14" fill="#A9C8EC" stroke="#16130F" strokeWidth="1.5" />
+        </g>
+        <g transform="translate(540, 220)" stroke="#16130F" strokeWidth="1.5" fill="#E7B94A" fillOpacity="0.4">
+          <ellipse cx="40" cy="40" rx="30" ry="25" />
+          <ellipse cx="80" cy="40" rx="30" ry="25" />
+          <ellipse cx="60" cy="15" rx="25" ry="20" />
+          <line x1="20" y1="25" x2="60" y2="25" stroke="#16130F" strokeWidth="2" />
+          <line x1="60" y1="45" x2="100" y2="45" stroke="#16130F" strokeWidth="2" />
+        </g>
+        <g transform="translate(900, 220)">
+          <circle cx="0" cy="0" r="70" fill="#FAF4E2" stroke="#16130F" strokeWidth="2.5" />
+          <circle cx="0" cy="0" r="62" fill="none" stroke="#16130F" strokeWidth="1" strokeDasharray="3 3" />
+          <path d="M-40,10 C-30,-30 0,-45 0,-45 C0,-45 30,-30 40,10 C20,30 -20,30 -40,10 Z" fill="#3E5B34" fillOpacity="0.2" stroke="#16130F" strokeWidth="1.5" />
+          <line x1="0" y1="-45" x2="0" y2="25" stroke="#16130F" strokeWidth="2" />
+          <text x="0" y="45" textAnchor="middle" fontFamily="Newsreader, serif" fontSize="12" fontWeight="bold">STEWARDSHIP</text>
+        </g>
+        <rect x="10" y="10" width="1180" height="460" fill="none" stroke="#16130F" strokeWidth="2" />
+        <rect x="330" y="8" width="540" height="28" fill="#FBF6E6" stroke="#16130F" strokeWidth="1.5" />
+        <text x="600" y="27" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize="10" fontWeight="bold" letterSpacing="2" fill="#16130F">
+          PLATE 7.4 · FARMER STEWARDSHIP, HARVEST LOGS & OPERATOR IDENTITY
+        </text>
+      </svg>
+    );
+
+    // Reusable Editorial Page Artwork Header Banner with Expand/Compact Toggle
+    const PageArtworkHeader = ({
+      title,
+      plateNo,
+      subtitle,
+      children,
+      defaultExpanded = false
+    }) => {
+      const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+      return (
+        <div className="w-full bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl overflow-hidden shadow-sm relative transition-all duration-300">
+          <div className="px-5 py-3 border-b-2 border-[#16130F]/15 flex flex-wrap justify-between items-center gap-2 bg-[#FBF6E6]/90 backdrop-blur z-10 relative">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#3E5B34]" />
+              <span className="font-mono text-xs uppercase tracking-widest text-[#3E5B34] font-bold">
+                {plateNo}
+              </span>
+              <span className="text-xs text-[#16130F]/60 hidden sm:inline">&bull; {subtitle}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="px-3 py-1 rounded-full font-mono text-[10px] uppercase font-bold border border-[#16130F] bg-white hover:bg-[#16130F] hover:text-[#FBF6E6] transition-colors"
+            >
+              {isExpanded ? "▲ Compact Backdrop" : "▼ Expand Full Engraving"}
+            </button>
+          </div>
+
+          <div className={`relative transition-all duration-500 overflow-hidden ${isExpanded ? "max-h-[520px]" : "max-h-[140px] sm:max-h-[180px]"}`}>
+            {children}
+            {!isExpanded && (
+              <div className="absolute inset-0 bg-gradient-to-t from-[#FAF4E2] via-[#FAF4E2]/40 to-transparent pointer-events-none" />
+            )}
+            {!isExpanded && (
+              <div className="absolute bottom-3 left-5 bg-[#FAF4E2]/90 backdrop-blur border border-[#16130F]/30 px-3 py-1 rounded-full font-mono text-[10px] font-bold text-[#16130F]">
+                {title}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    };
+    const DEMO_USERS = [
+      {
+        id: "farmer-ramesh-01",
+        name: "Ramesh Farmer",
+        email: "ramesh@agrica.org",
+        role: "Lead Agriculturist & Plot Manager",
+        location: "Odisha Agro-Zone 4, Kendrapara",
+        gender: "male",
+        farmSize: "4.5 Acres"
+      },
+      {
+        id: "farmer-anita-02",
+        name: "Anita Sharma",
+        email: "anita@agrica.org",
+        role: "Agronomy Specialist & Farm Director",
+        location: "Punjab Central Basin, Ludhiana",
+        gender: "female",
+        farmSize: "8.2 Acres"
+      }
+    ];
+
+    const INITIAL_FIELDS = [
+      {
+        id: "field-paddy-01",
+        fieldNo: 1,
+        name: "Field 1 · Paddy block",
+        crop: "paddy",
+        cropLabel: "Paddy (Rice)",
+        soil: "clay",
+        soilLabel: "Clay Soil (High retention)",
+        areaAcres: 1.5,
+        areaM2: 6070,
+        method: "drip",
+        flowRateLpm: 32.4,
+        lat: 20.2961,
+        lng: 85.8245,
+        config: { lowT: 60, highT: 85, rainBlockPct: 60, maxRunMin: 35, mode: "AUTO" },
+        live: { moisture: 42, tempC: 30.5, humidity: 68, rainSensor: false, pumpOn: false, pumpRunSeconds: 0, lastSeen: Date.now() - 25000, status: "OFF", reason: "Moisture within target envelope" }
+      },
+      {
+        id: "field-vegetable-02",
+        fieldNo: 2,
+        name: "Field 2 · Vegetable Nursery",
+        crop: "vegetables",
+        cropLabel: "Vegetables & Greens",
+        soil: "loamy",
+        soilLabel: "Loamy Soil (Optimal)",
+        areaAcres: 0.8,
+        areaM2: 3237,
+        method: "sprinkler",
+        flowRateLpm: 18.0,
+        lat: 20.3012,
+        lng: 85.8310,
+        config: { lowT: 45, highT: 70, rainBlockPct: 55, maxRunMin: 20, mode: "MANUAL" },
+        live: { moisture: 38, tempC: 32.0, humidity: 58, rainSensor: false, pumpOn: true, pumpRunSeconds: 380, lastSeen: Date.now() - 15000, status: "ON", reason: "Manual override active: Running" }
+      },
+      {
+        id: "field-wheat-03",
+        fieldNo: 3,
+        name: "Field 3 · North Wheat Ridge",
+        crop: "wheat",
+        cropLabel: "Wheat HD-2967",
+        soil: "sandy",
+        soilLabel: "Sandy Loam (Rapid drainage)",
+        areaAcres: 2.2,
+        areaM2: 8903,
+        method: "furrow",
+        flowRateLpm: 45.0,
+        lat: 20.2890,
+        lng: 85.8150,
+        config: { lowT: 35, highT: 60, rainBlockPct: 65, maxRunMin: 45, mode: "AUTO" },
+        live: { moisture: 54, tempC: 28.5, humidity: 72, rainSensor: false, pumpOn: false, pumpRunSeconds: 0, lastSeen: Date.now() - 40000, status: "OFF", reason: "Moisture adequate: pump idle" }
+      }
+    ];
+
+    const getCropDefaults = (crop, soil) => {
+      const base = {
+        paddy: { lowT: 60, highT: 85 },
+        wheat: { lowT: 35, highT: 60 },
+        sugarcane: { lowT: 50, highT: 75 },
+        cotton: { lowT: 30, highT: 55 },
+        vegetables: { lowT: 45, highT: 70 },
+        maize: { lowT: 40, highT: 65 },
+        custom: { lowT: 40, highT: 65 }
+      };
+      let t = base[crop] || base.custom;
+      if (soil === 'clay') return { lowT: t.lowT + 5, highT: Math.min(t.highT + 5, 95) };
+      if (soil === 'sandy') return { lowT: Math.max(t.lowT - 5, 20), highT: t.highT - 5 };
+      return t;
+    };
+
+    // --- MAIN APP COMPONENT ---
+    function App() {
+      const [activeTab, setActiveTab] = useState("home");
+      const [currentUser, setCurrentUser] = useState(DEMO_USERS[0]);
+      const [fields, setFields] = useState(INITIAL_FIELDS);
+      const [activeFieldId, setActiveFieldId] = useState(INITIAL_FIELDS[0].id);
+      const [selectedField, setSelectedField] = useState(null);
+      const [simulatedRain, setSimulatedRain] = useState(false);
+      const [isAlertsOpen, setIsAlertsOpen] = useState(false);
+      const [manualTimerMinutes, setManualTimerMinutes] = useState(15);
+      const [manualTimerSecondsLeft, setManualTimerSecondsLeft] = useState(null);
+
+      // Add Field Form State
+      const [newFieldName, setNewFieldName] = useState("");
+      const [newCrop, setNewCrop] = useState("paddy");
+      const [newSoil, setNewSoil] = useState("clay");
+      const [newAreaAcres, setNewAreaAcres] = useState(1.5);
+      const [newMethod, setNewMethod] = useState("drip");
+      const [newLowT, setNewLowT] = useState(60);
+      const [newHighT, setNewHighT] = useState(85);
+      const [newRainBlock, setNewRainBlock] = useState(60);
+      const [newFlowRate, setNewFlowRate] = useState(32.4);
+      const [newLat, setNewLat] = useState(20.2961);
+      const [newLng, setNewLng] = useState(85.8245);
+      const [fieldAddedMessage, setFieldAddedMessage] = useState(null);
+
+      // Auth View State
+      const [authMode, setAuthMode] = useState("login");
+      const [authEmail, setAuthEmail] = useState("ramesh@agrica.org");
+      const [authPassword, setAuthPassword] = useState("password123");
+      const [authName, setAuthName] = useState("");
+      const [authFarmLocation, setAuthFarmLocation] = useState("Odisha Agro-Zone 4");
+
+      // Weather View State
+      const [weatherCity, setWeatherCity] = useState("Bhubaneswar");
+      const [weather, setWeather] = useState({
+        name: "Bhubaneswar, Odisha",
+        temp: 31.8,
+        humidity: 68,
+        wind: 14,
+        pressure: 1011,
+        desc: "CLEAR SKY & MODERATE HUMIDITY",
+        rainProb: 15,
+        isRain: false
+      });
+
+      // Contact Form State
+      const [contactSubmitted, setContactSubmitted] = useState(false);
+
+      // Terminal logs
+      const [terminalLogs, setTerminalLogs] = useState([
+        { time: "01:30:12", msg: "LoRa Mesh Gateway initialized on 868.1 MHz.", highlight: false },
+        { time: "01:31:05", msg: "Field 1 ADC reading: 2410 (Moisture: 42%). Target low: 60%.", highlight: false },
+        { time: "01:32:00", msg: "Telemetry nominal: 3 plot probes online. Battery: 4.12V (Solar OK).", highlight: false }
+      ]);
+
+      const currentField = fields.find(f => f.id === activeFieldId) || fields[0];
+
+      // Physical Simulation Loop (ticks every 3 seconds)
+      useEffect(() => {
+        const interval = setInterval(() => {
+          setFields(prev => prev.map(f => {
+            let m = f.live.moisture;
+            let pump = f.live.pumpOn;
+            let runSec = f.live.pumpRunSeconds;
+            let reason = f.live.reason;
+            let status = f.live.status;
+
+            if (pump) {
+              m = Math.min(95, m + 2);
+              runSec += 3;
+            } else {
+              m = Math.max(10, m - 0.5);
+              runSec = 0;
+            }
+
+            if (simulatedRain) {
+              m = Math.min(95, m + 3);
+              if (pump) {
+                pump = false;
+                status = "BLOCKED BY RAIN";
+                reason = "Precipitation lockout triggered (safety stop)";
+              }
+            } else if (f.config.mode === "AUTO") {
+              if (m < f.config.lowT && !pump) {
+                pump = true;
+                status = "ON";
+                reason = `Moisture ${m}% < threshold ${f.config.lowT}%. Auto ON.`;
+              } else if (m >= f.config.highT && pump) {
+                pump = false;
+                status = "OFF";
+                reason = `Moisture reached upper limit ${f.config.highT}%. Auto OFF.`;
+              } else if (pump) {
+                status = "ON";
+                reason = `Irrigating: ${m}% -> ${f.config.highT}%`;
+              } else {
+                status = "OFF";
+                reason = "Moisture within normal limits";
+              }
+            }
+
+            return {
+              ...f,
+              live: {
+                ...f.live,
+                moisture: Math.round(m),
+                pumpOn: pump,
+                pumpRunSeconds: runSec,
+                status: pump ? "ON" : (simulatedRain ? "BLOCKED BY RAIN" : "OFF"),
+                reason,
+                lastSeen: Date.now()
+              }
+            };
+          }));
+        }, 3000);
+
+        return () => clearInterval(interval);
+      }, [simulatedRain]);
+
+      // Manual Run Countdown Timer
+      useEffect(() => {
+        let timer;
+        if (manualTimerSecondsLeft !== null && manualTimerSecondsLeft > 0) {
+          timer = setInterval(() => {
+            setManualTimerSecondsLeft(sec => {
+              if (sec <= 1) {
+                setFields(fs => fs.map(f => f.id === currentField.id ? { ...f, live: { ...f.live, pumpOn: false, status: "OFF", reason: "Manual timer completed" } } : f));
+                const tStr = new Date().toTimeString().split(" ")[0];
+                setTerminalLogs(l => [{ time: tStr, msg: `Manual timer elapsed. Pump relay OFF.`, highlight: true }, ...l.slice(0, 20)]);
+                return null;
+              }
+              return sec - 1;
+            });
+          }, 1000);
+        }
+        return () => clearInterval(timer);
+      }, [manualTimerSecondsLeft, currentField.id]);
+
+      const handleModeChange = (fieldId, newMode) => {
+        setFields(fs => fs.map(f => {
+          if (f.id === fieldId) {
+            const updated = { ...f, config: { ...f.config, mode: newMode } };
+            const timeStr = new Date().toTimeString().split(" ")[0];
+            setTerminalLogs(logs => [
+              { time: timeStr, msg: `Mode switched to ${newMode} for ${f.name}.`, highlight: true },
+              ...logs.slice(0, 20)
+            ]);
+            return updated;
+          }
+          return f;
+        }));
+      };
+
+      const toggleManualPump = (field) => {
+        setFields(prev => prev.map(f => {
+          if (f.id === field.id) {
+            const willTurnOn = !f.live.pumpOn;
+            const timeStr = new Date().toTimeString().split(" ")[0];
+            setTerminalLogs(logs => [
+              { time: timeStr, msg: willTurnOn ? `MANUAL OVERRIDE: Pump relay ENERGIZED (${f.flowRateLpm || 32.4} L/min).` : "MANUAL OVERRIDE: Pump relay DE-ENERGIZED.", highlight: true },
+              ...logs.slice(0, 20)
+            ]);
+            return {
+              ...f,
+              live: {
+                ...f.live,
+                pumpOn: willTurnOn,
+                status: willTurnOn ? "ON" : "OFF",
+                reason: willTurnOn ? "Manual operator override: Pump ON" : "Manual operator override: Pump stopped",
+                pumpRunSeconds: 0
+              }
+            };
+          }
+          return f;
+        }));
+      };
+
+      const startTimedRun = (minutes) => {
+        setManualTimerSecondsLeft(minutes * 60);
+        setFields(prev => prev.map(f => {
+          if (f.id === currentField.id) {
+            return {
+              ...f,
+              live: {
+                ...f.live,
+                pumpOn: true,
+                status: "ON",
+                reason: `Manual timer running (${minutes} min)`
+              }
+            };
+          }
+          return f;
+        }));
+        const tStr = new Date().toTimeString().split(" ")[0];
+        setTerminalLogs(l => [{ time: tStr, msg: `Timer started: ${minutes} min irrigation run scheduled.`, highlight: true }, ...l.slice(0, 20)]);
+      };
+
+      const handleAddFieldSubmit = (e) => {
+        e.preventDefault();
+        const cropLabels = {
+          paddy: "Paddy (Rice)",
+          wheat: "Wheat HD-2967",
+          sugarcane: "Sugarcane Cane-Block",
+          cotton: "Cotton Fiber Plot",
+          vegetables: "Vegetables & Greens",
+          maize: "Maize / Corn",
+          custom: "Custom Crop Variety"
+        };
+        const soilLabels = {
+          clay: "Clay Soil (High retention)",
+          loamy: "Loamy Soil (Optimal)",
+          sandy: "Sandy Loam (Rapid drainage)"
+        };
+
+        const newId = `field-${newCrop}-${Date.now().toString(36)}`;
+        const newField = {
+          id: newId,
+          fieldNo: fields.length + 1,
+          name: newFieldName.trim() || `Field ${fields.length + 1} · ${cropLabels[newCrop]}`,
+          crop: newCrop,
+          cropLabel: cropLabels[newCrop] || newCrop,
+          soil: newSoil,
+          soilLabel: soilLabels[newSoil] || newSoil,
+          areaAcres: Number(newAreaAcres),
+          areaM2: Math.round(Number(newAreaAcres) * 4046.86),
+          method: newMethod,
+          flowRateLpm: Number(newFlowRate),
+          lat: Number(newLat),
+          lng: Number(newLng),
+          config: {
+            lowT: Number(newLowT),
+            highT: Number(newHighT),
+            rainBlockPct: Number(newRainBlock),
+            maxRunMin: 30,
+            mode: "AUTO"
+          },
+          live: {
+            moisture: Math.round((Number(newLowT) + Number(newHighT)) / 2) - 5,
+            tempC: 31.0,
+            humidity: 65,
+            rainSensor: false,
+            pumpOn: false,
+            pumpRunSeconds: 0,
+            lastSeen: Date.now(),
+            status: "OFF",
+            reason: "Field initialized & calibrated"
+          }
+        };
+
+        setFields(prev => [...prev, newField]);
+        setActiveFieldId(newId);
+        setFieldAddedMessage(`Successfully registered ${newField.name}! Switched active telemetry to this plot.`);
+        setTimeout(() => {
+          setFieldAddedMessage(null);
+          setActiveTab("controller");
+        }, 1800);
+      };
+
+      const handleCropSelect = (crop) => {
+        setNewCrop(crop);
+        const defaults = getCropDefaults(crop, newSoil);
+        setNewLowT(defaults.lowT);
+        setNewHighT(defaults.highT);
+      };
+
+      const handleSoilSelect = (soil) => {
+        setNewSoil(soil);
+        const defaults = getCropDefaults(newCrop, soil);
+        setNewLowT(defaults.lowT);
+        setNewHighT(defaults.highT);
+      };
+
+      const searchWeather = (e) => {
+        e.preventDefault();
+        const city = weatherCity.toLowerCase();
+        if (city.includes("mumbai") || city.includes("rain") || city.includes("kerala")) {
+          setWeather({ name: "Mumbai Region, Maharashtra", temp: 29.5, humidity: 88, wind: 24, pressure: 1008, desc: "MODERATE MONSOON SHOWERS", rainProb: 85, isRain: true });
+        } else if (city.includes("delhi") || city.includes("punjab")) {
+          setWeather({ name: "New Delhi & Northern Basin", temp: 34.0, humidity: 45, wind: 18, pressure: 1010, desc: "HOT & DRY SUNNY CONDITIONS", rainProb: 10, isRain: false });
+        } else {
+          setWeather({ name: `${weatherCity}, Agro-Zone`, temp: 31.4, humidity: 66, wind: 15, pressure: 1012, desc: "PARTLY CLOUDY & CLEAR", rainProb: 20, isRain: false });
+        }
+      };
+
+      return (
+        <div className="min-h-screen bg-[#FBF6E6] text-[#16130F] flex flex-col justify-between">
+          <div>
+            {/* Top Announcement Bar */}
+            <div className="bg-[#FAF4E2] border-b border-[#16130F]/15 px-4 py-2 font-mono text-xs uppercase tracking-wider text-[#16130F]/80">
+              <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#3E5B34] animate-pulse" />
+                  <span className="font-bold text-[#3E5B34]">Agrica Telemetry Network</span>
+                  <span className="hidden sm:inline">&bull; 3 Active Agricultural Plot Probes &bull; LoRa 868MHz Mesh OK</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setActiveTab("auth")} className="flex items-center gap-2 font-bold hover:text-[#3E5B34]">
+                    <IconFarmerAvatar className="w-4 h-4" gender={currentUser?.gender || "male"} />
+                    <span>{currentUser ? currentUser.name : "Sign In"}</span>
+                  </button>
+                  {currentUser && (
+                    <button onClick={() => setCurrentUser(null)} className="text-[10px] text-[#D98B6F] underline ml-1">
+                      Logout
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Main Navigation Header */}
+            <header className="sticky top-0 z-40 bg-[#FBF6E6]/95 backdrop-blur border-b-2 border-[#16130F] px-4 py-3.5">
+              <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <button onClick={() => { setSelectedField(null); setActiveTab("home"); }} className="flex items-center gap-3 text-left">
+                  <span className="w-10 h-10 rounded-full border-2 border-[#16130F] flex items-center justify-center bg-[#A8BE86]/40 shadow-sm">
+                    <IconWheat className="w-6 h-6 text-[#3E5B34]" />
+                  </span>
+                  <div>
+                    <div className="font-serif text-2xl font-bold leading-none tracking-tight">AGRICA</div>
+                    <div className="font-mono text-[9px] text-[#16130F]/70 uppercase tracking-widest mt-0.5">SMART PRECISION IRRIGATION</div>
+                  </div>
+                </button>
+
+                {/* Desktop Tabs */}
+                <nav className="hidden lg:flex items-center space-x-6 font-mono text-xs uppercase tracking-wider font-bold">
+                  {[
+                    { id: "home", label: "Home" },
+                    { id: "controller", label: "Pump Controller" },
+                    { id: "dashboard", label: "Live Cockpit" },
+                    { id: "add-field", label: "+ Register Plot" },
+                    { id: "weather", label: "Weather Station" },
+                    { id: "contact", label: "Krishi Desk" },
+                    { id: "auth", label: currentUser ? "My Account" : "Sign In" }
+                  ].map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => { setSelectedField(null); setActiveTab(t.id); }}
+                      className={`py-1.5 border-b-2 transition-all ${activeTab === t.id && !selectedField ? "border-[#16130F] text-[#16130F]" : "border-transparent text-[#16130F]/60 hover:text-[#16130F]"}`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </nav>
+
+                <div className="flex items-center gap-2.5">
+                  <span className="px-3 py-1 rounded-full font-mono text-[10px] font-bold uppercase border-2 bg-[#FAF4E2] text-[#D98B6F] border-[#D98B6F]">
+                    SIMULATOR ACTIVE
+                  </span>
+                  <button onClick={() => setIsAlertsOpen(true)} className="p-2.5 rounded-full border-2 border-[#16130F] hover:bg-[#16130F]/5 relative">
+                    <IconBell className="w-4 h-4 text-[#16130F]" />
+                    <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#3E5B34]" />
+                  </button>
+                  <button onClick={() => { setSelectedField(null); setActiveTab("controller"); }} className="hidden sm:inline-block px-5 py-2.5 rounded-full bg-[#0E0C0B] text-[#FBF6E6] font-mono text-xs uppercase font-bold hover:bg-[#3E5B34] transition-colors shadow">
+                    Launch Pump
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            {/* Main Canvas Body */}
+            <main className="max-w-7xl mx-auto px-4 py-8">
+              
+              {/* 1. HOME & EDITORIAL OVERVIEW VIEW */}
+              {activeTab === "home" && !selectedField && (
+                <div className="space-y-10 pb-20 animate-fadeIn">
+                  
+                  {/* EDITORIAL IN-SITU SPRINKLER & FURROW IRRIGATION PLATE */}
+                  <EditorialIrrigationPlate />
+
+                  {/* Headline & Value Statement */}
+                  <div className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-8 sm:p-12 shadow-sm relative overflow-hidden space-y-6">
+                    <div className="absolute -right-12 -bottom-12 w-96 h-auto pointer-events-none opacity-[0.05] select-none">
+                      <SprinklerFieldEngraving />
+                    </div>
+                    <span className="font-mono text-xs uppercase tracking-widest text-[#3E5B34] font-bold px-3 py-1.5 bg-[#FBF6E6] border border-[#16130F]/20 rounded-full inline-block relative z-10">
+                      AGRICULTURAL WATER AUTOMATION &bull; REV 2.4
+                    </span>
+                    <h1 className="font-serif text-4xl sm:text-6xl font-normal leading-tight relative z-10">
+                      Every drop, <span className="italic text-[#3E5B34]">where it matters.</span>
+                    </h1>
+                    <p className="font-sans text-base sm:text-xl text-[#16130F]/85 max-w-3xl leading-relaxed relative z-10">
+                      Fixed schedules and guesswork lead to over-watering, crop rot, and wasted electricity. AGRICA reads real-time root-zone moisture, checks weather forecasts, and energizes the pump relay only when the field actually thirsts.
+                    </p>
+                    <div className="flex flex-wrap gap-4 pt-2 relative z-10">
+                      <button onClick={() => setActiveTab("controller")} className="px-8 py-3.5 rounded-full bg-[#0E0C0B] text-[#FBF6E6] font-mono text-sm uppercase font-bold hover:bg-[#3E5B34] transition-all shadow-md">
+                        Open Pump Controller →
+                      </button>
+                      <button onClick={() => setActiveTab("add-field")} className="px-7 py-3.5 rounded-full border-2 border-[#16130F] font-mono text-sm uppercase font-bold hover:bg-[#16130F]/5 transition-all">
+                        + Register New Field Plot
+                      </button>
+                      <button onClick={() => setActiveTab("dashboard")} className="px-7 py-3.5 rounded-full border-2 border-[#16130F] font-mono text-sm uppercase font-bold hover:bg-[#16130F]/5 transition-all">
+                        Multi-Field Cockpit ({fields.length} Plots)
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 4 Value Pillars with Authentic Handcrafted Icons */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    {[
+                      { title: "35% – 50% Water Conserved", desc: "Closed-loop hysteresis runs irrigation pumps only when root soil moisture drops below calibrated threshold T.", icon: <IconWaterDrop className="w-8 h-8 text-[#A9C8EC]" /> },
+                      { title: "Manual & Auto Relays", desc: "Instant manual override timer plus autonomous closed-loop microcontroller logic.", icon: <IconPumpImpeller className="w-8 h-8 text-[#3E5B34]" /> },
+                      { title: "Continuous Soil Telemetry", desc: "Capacitive field probes transmit calibrated VWC percentage at 60s intervals via LoRa mesh.", icon: <IconSoilProbe className="w-8 h-8 text-[#D98B6F]" /> },
+                      { title: "Rainfall Avoidance Lockout", desc: "Hyperlocal precipitation forecasts immediately lockout pump cycles to prevent waterlogging.", icon: <IconRainCloud className="w-8 h-8 text-[#9FA9EE]" /> }
+                    ].map(p => (
+                      <div key={p.title} className="p-6 bg-[#FAF4E2] rounded-3xl border-2 border-[#16130F] shadow-sm space-y-3">
+                        <div className="p-2 w-12 h-12 rounded-2xl bg-[#FBF6E6] border border-[#16130F]/20 flex items-center justify-center">
+                          {p.icon}
+                        </div>
+                        <h3 className="font-serif font-bold text-xl">{p.title}</h3>
+                        <p className="font-sans text-sm text-[#16130F]/75 leading-relaxed">{p.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Operational Modules Navigation Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-8 shadow-sm flex flex-col justify-between space-y-5">
+                      <div>
+                        <span className="font-mono text-xs uppercase font-bold text-[#A9C8EC] bg-[#16130F] px-2.5 py-1 rounded">ACTUATOR COCKPIT</span>
+                        <h3 className="font-serif text-3xl font-bold mt-3">Field & Irrigation Controller</h3>
+                        <p className="font-sans text-sm text-[#16130F]/80 mt-2 leading-relaxed">
+                          Circular soil gauge, prominent MANUAL vs AUTOMATIC switch, timed run countdown, dynamic threshold slider, and live black console terminal.
+                        </p>
+                      </div>
+                      <button onClick={() => setActiveTab("controller")} className="w-full py-3 bg-[#0E0C0B] text-[#FBF6E6] rounded-full font-mono text-xs uppercase font-bold hover:bg-[#3E5B34]">
+                        Launch Controller →
+                      </button>
+                    </div>
+
+                    <div className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-8 shadow-sm flex flex-col justify-between space-y-5">
+                      <div>
+                        <span className="font-mono text-xs uppercase font-bold text-[#3E5B34] bg-[#A8BE86]/40 px-2.5 py-1 rounded">MULTI-PLOT REGISTRY</span>
+                        <h3 className="font-serif text-3xl font-bold mt-3">Register & Configure New Plots</h3>
+                        <p className="font-sans text-sm text-[#16130F]/80 mt-2 leading-relaxed">
+                          Add fields with crop varieties (Paddy, Wheat, Sugarcane, Cotton, Vegetables, Maize), soil texture, plot acreage, irrigation methods, and GPS coordinates.
+                        </p>
+                      </div>
+                      <button onClick={() => setActiveTab("add-field")} className="w-full py-3 bg-[#0E0C0B] text-[#FBF6E6] rounded-full font-mono text-xs uppercase font-bold hover:bg-[#3E5B34]">
+                        Register New Field Plot →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 2. PUMP CONTROLLER (Prominent Manual vs Auto, Big Fonts, Dial, Terminal) */}
+              {activeTab === "controller" && !selectedField && (
+                <div className="space-y-8 pb-20 animate-fadeIn">
+                  {/* Plate 2.1 Editorial Backdrop Header Banner */}
+                  <PageArtworkHeader
+                    plateNo="PLATE 2.1"
+                    title="Borewell Motor Actuator & Delivery Manifold"
+                    subtitle="In-situ electromechanical pump shed, pressure gauge & hydraulic flume"
+                    defaultExpanded={false}
+                  >
+                    <BorewellPumpHouseEngraving />
+                  </PageArtworkHeader>
+
+                  <div className="flex flex-wrap justify-between items-center border-b-2 border-[#16130F]/20 pb-5 gap-4">
+                    <div>
+                      <span className="font-mono text-xs uppercase tracking-widest text-[#16130F]/70 font-bold">FIELD & IRRIGATION CONTROLLER &bull; SECTION 1.10</span>
+                      <h1 className="font-serif text-4xl sm:text-5xl font-normal mt-1">
+                        Pump Actuator & <span className="italic text-[#3E5B34]">Soil Cockpit</span>
+                      </h1>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-xs uppercase font-bold text-[#16130F]/70">Active Plot:</span>
+                      <select
+                        value={activeFieldId}
+                        onChange={e => setActiveFieldId(e.target.value)}
+                        className="bg-[#FAF4E2] border-2 border-[#16130F] font-mono text-sm rounded-full px-4 py-2 font-bold cursor-pointer shadow-sm"
+                      >
+                        {fields.map(f => <option key={f.id} value={f.id}>{f.name} ({f.cropLabel})</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    {/* Left Column: Dial, Mode Switch, Actuator */}
+                    <div className="lg:col-span-7 space-y-6">
+                      
+                      {/* Dial Cockpit Card */}
+                      <div className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-8 shadow-sm flex flex-col sm:flex-row items-center gap-8 relative overflow-hidden">
+                        <div className="absolute -right-8 -bottom-8 w-72 sm:w-80 h-auto pointer-events-none opacity-[0.07] select-none">
+                          <BorewellPumpHouseEngraving />
+                        </div>
+                        <div className={`w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-[#FBF6E6] border-8 flex flex-col items-center justify-center flex-shrink-0 shadow-lg relative z-10 ${currentField.live.moisture < currentField.config.lowT ? "border-[#D98B6F] text-[#D98B6F]" : "border-[#3E5B34] text-[#16130F]"}`}>
+                          <div className="font-serif text-5xl sm:text-6xl font-bold leading-none">{currentField.live.moisture}%</div>
+                          <div className="font-mono text-xs font-bold text-[#16130F]/70 uppercase mt-2">VWC MOISTURE</div>
+                        </div>
+
+                        <div className="space-y-3 text-center sm:text-left flex-1 relative z-10">
+                          <span className="font-mono text-xs uppercase tracking-wider text-[#16130F]/70 font-bold">PLOT #{currentField.fieldNo || 1} &bull; {currentField.soilLabel}</span>
+                          <h2 className="font-serif text-3xl font-bold leading-snug">{currentField.name}</h2>
+                          <p className="font-sans text-sm text-[#16130F]/80">
+                            Irrigation Envelope: Trigger pump below <strong>{currentField.config.lowT}%</strong>, stop at <strong>{currentField.config.highT}%</strong>.
+                          </p>
+                          <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full font-mono text-xs font-bold uppercase border-2 ${currentField.live.moisture < currentField.config.lowT ? "bg-[#D98B6F]/20 text-[#D98B6F] border-[#D98B6F]" : "bg-[#A8BE86]/30 text-[#3E5B34] border-[#3E5B34]"}`}>
+                            {currentField.live.moisture < currentField.config.lowT ? (
+                              <>
+                                <IconWarningTriangle className="w-4 h-4 text-[#D98B6F]" />
+                                <span>MOISTURE DEFICIT: IRRIGATION REQUIRED</span>
+                              </>
+                            ) : (
+                              <>
+                                <IconCheckCircle className="w-4 h-4 text-[#3E5B34]" />
+                                <span>OPTIMAL: SOIL HYDRATION SUFFICIENT</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* PROMINENT MANUAL VS AUTOMATIC MODE SELECTOR */}
+                      <div className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-6 shadow-sm space-y-4">
+                        <div className="flex justify-between items-center border-b border-[#16130F]/15 pb-3">
+                          <span className="font-mono text-xs uppercase font-bold text-[#16130F]/80 tracking-wider">PUMP OPERATIONAL CONTROL MODE:</span>
+                          <span className={`font-mono text-xs font-bold uppercase px-3 py-1 rounded-full border-2 ${currentField.config.mode === "AUTO" ? "bg-[#A8BE86]/40 text-[#3E5B34] border-[#3E5B34]" : "bg-[#D98B6F]/20 text-[#D98B6F] border-[#D98B6F]"}`}>
+                            ACTIVE: {currentField.config.mode}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <button
+                            type="button"
+                            onClick={() => handleModeChange(currentField.id, "AUTO")}
+                            className={`p-4 rounded-2xl border-2 flex flex-col items-center justify-center text-center transition-all ${currentField.config.mode === "AUTO" ? "bg-[#0E0C0B] text-[#FBF6E6] border-[#0E0C0B] shadow-md" : "bg-[#FBF6E6] text-[#16130F] border-[#16130F]/30 hover:border-[#16130F]"}`}
+                          >
+                            <IconAutoMode className={`w-7 h-7 mb-1.5 ${currentField.config.mode === "AUTO" ? "text-[#A8BE86]" : "text-[#3E5B34]"}`} />
+                            <span className="font-serif text-lg font-bold">AUTOMATIC MODE</span>
+                            <span className="font-mono text-[10px] uppercase opacity-80 mt-0.5">Closed-Loop Sensor Logic</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleModeChange(currentField.id, "MANUAL")}
+                            className={`p-4 rounded-2xl border-2 flex flex-col items-center justify-center text-center transition-all ${currentField.config.mode === "MANUAL" ? "bg-[#0E0C0B] text-[#FBF6E6] border-[#0E0C0B] shadow-md" : "bg-[#FBF6E6] text-[#16130F] border-[#16130F]/30 hover:border-[#16130F]"}`}
+                          >
+                            <IconManualMode className={`w-7 h-7 mb-1.5 ${currentField.config.mode === "MANUAL" ? "text-[#D98B6F]" : "text-[#16130F]"}`} />
+                            <span className="font-serif text-lg font-bold">MANUAL OVERRIDE</span>
+                            <span className="font-mono text-[10px] uppercase opacity-80 mt-0.5">Instant Farmer Trigger</span>
+                          </button>
+                        </div>
+
+                        {currentField.config.mode === "AUTO" ? (
+                          <div className="p-4 bg-[#FBF6E6] rounded-2xl border border-[#16130F]/20 font-mono text-xs space-y-1.5 text-[#16130F]/85">
+                            <div className="font-bold text-[#3E5B34]">Automated Logic Active:</div>
+                            <div>&bull; Turn ON pump when moisture &lt; {currentField.config.lowT}%.</div>
+                            <div>&bull; Turn OFF pump when moisture &ge; {currentField.config.highT}% (hysteresis).</div>
+                            <div>&bull; Instant safety lock if rain is forecasted &gt; {currentField.config.rainBlockPct}%.</div>
+                          </div>
+                        ) : (
+                          <div className="p-4 bg-[#FBF6E6] rounded-2xl border border-[#16130F]/20 font-mono text-xs space-y-3">
+                            <div className="font-bold text-[#D98B6F]">Manual Run Duration Presets:</div>
+                            <div className="flex flex-wrap gap-2">
+                              {[5, 15, 30, 60].map(mins => (
+                                <button
+                                  key={mins}
+                                  onClick={() => startTimedRun(mins)}
+                                  className="px-3.5 py-1.5 rounded-full border-2 border-[#16130F] bg-white font-bold text-xs hover:bg-[#3E5B34] hover:text-white transition-colors"
+                                >
+                                  Run for {mins}m
+                                </button>
+                              ))}
+                            </div>
+                            {manualTimerSecondsLeft !== null && (
+                              <div className="p-2 bg-[#D98B6F]/20 border border-[#D98B6F] rounded-xl text-center font-bold text-[#D98B6F]">
+                                Timer Active: {Math.floor(manualTimerSecondsLeft / 60)}m {manualTimerSecondsLeft % 60}s remaining
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Main Pump Actuator Button */}
+                      <div className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-6 sm:p-8 shadow-sm space-y-5 relative overflow-hidden">
+                        <div className="absolute -right-8 -bottom-8 w-72 h-auto pointer-events-none opacity-[0.06] select-none">
+                          <BorewellPumpHouseEngraving />
+                        </div>
+                        <div className="flex justify-between items-center border-b border-[#16130F]/15 pb-4 relative z-10">
+                          <div className="flex items-center gap-4">
+                            <IconPumpImpeller className="w-10 h-10 text-[#3E5B34]" isSpinning={currentField.live.pumpOn} />
+                            <div>
+                              <div className="font-serif font-bold text-xl">Agricultural Pump Actuator Relay</div>
+                              <div className="font-mono text-sm text-[#16130F]/80">
+                                Relay State: <strong className={currentField.live.pumpOn ? "text-[#3E5B34]" : "text-[#D98B6F]"}>{currentField.live.pumpOn ? "ENERGIZED (PUMP RUNNING)" : "DE-ENERGIZED (PUMP IDLE)"}</strong>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="bg-[#FBF6E6] border border-[#16130F]/20 px-4 py-2 rounded-2xl font-mono text-center">
+                            <span className="text-[10px] text-[#16130F]/60 block uppercase font-bold">DISCHARGE FLOW</span>
+                            <span className="font-bold text-lg">{currentField.live.pumpOn ? `${currentField.flowRateLpm || 32.4} L/min` : "0.0 L/min"}</span>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => toggleManualPump(currentField)}
+                          disabled={simulatedRain}
+                          className={`w-full py-4 rounded-full font-mono text-sm uppercase font-bold tracking-wider transition-all border-2 shadow-md ${simulatedRain ? "bg-gray-300 border-gray-400 text-gray-500 cursor-not-allowed" : currentField.live.pumpOn ? "bg-[#D98B6F] text-[#FBF6E6] border-[#16130F] hover:bg-[#b86b4f]" : "bg-[#0E0C0B] text-[#FBF6E6] border-[#0E0C0B] hover:bg-[#3E5B34]"}`}
+                        >
+                          {simulatedRain ? "PUMP LOCKED OUT (RAIN ACTIVE)" : currentField.live.pumpOn ? "DISENGAGE RELAY (TURN PUMP OFF)" : "ENERGIZE RELAY (TURN PUMP ON)"}
+                        </button>
+                      </div>
+
+                      {/* Rain Avoidance Lockout Box */}
+                      <div className={`border-2 border-[#16130F] rounded-3xl p-6 flex flex-col sm:flex-row justify-between items-center gap-4 ${simulatedRain ? "bg-[#9FA9EE]/30" : "bg-[#FAF4E2]"}`}>
+                        <div className="flex items-center gap-4">
+                          <IconRainCloud className="w-8 h-8 text-[#9FA9EE]" />
+                          <div>
+                            <div className="font-serif font-bold text-lg">Precipitation Avoidance Lockout</div>
+                            <div className="font-mono text-xs text-[#16130F]/80 mt-0.5">
+                              {simulatedRain ? "Rain sensor active. All pump relays safely de-energized to prevent root saturation." : "Zero rain predicted. Closed-loop irrigation authorized."}
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setSimulatedRain(!simulatedRain)}
+                          className="px-5 py-2.5 rounded-full border-2 border-[#16130F] font-mono text-xs uppercase font-bold bg-white hover:bg-[#16130F] hover:text-white transition-colors"
+                        >
+                          {simulatedRain ? "Clear Rain Event" : "Simulate Rain Event"}
+                        </button>
+                      </div>
+
+                      {/* Dynamic Threshold Slider */}
+                      <div className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-6 shadow-sm space-y-4 font-mono text-xs">
+                        <div className="flex justify-between items-center border-b border-[#16130F]/15 pb-2">
+                          <span className="font-bold uppercase text-sm">Target Trigger Threshold (T):</span>
+                          <span className="bg-[#A8BE86]/40 text-[#3E5B34] font-bold px-3 py-1 rounded text-base border border-[#3E5B34]/30">{currentField.config.lowT}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="20"
+                          max="75"
+                          value={currentField.config.lowT}
+                          onChange={e => {
+                            const val = Number(e.target.value);
+                            setFields(fs => fs.map(f => f.id === currentField.id ? { ...f, config: { ...f.config, lowT: val, highT: Math.min(val + 25, 95) } } : f));
+                          }}
+                          className="w-full accent-[#3E5B34] cursor-pointer"
+                        />
+                        <div className="flex justify-between text-xs text-[#16130F]/70 font-bold">
+                          <span>MIN: 20%</span>
+                          <span className="text-[#3E5B34]">AUTO CUT-OFF: {currentField.config.highT}%</span>
+                          <span>MAX: 75%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Column: Console Activity Log & Soil Cross-section */}
+                    <div className="lg:col-span-5 space-y-6">
+                      
+                      {/* Black Console Activity Log Terminal */}
+                      <div className="bg-[#111827] border-2 border-[#16130F] rounded-3xl p-6 shadow-xl space-y-4 font-mono">
+                        <div className="flex items-center justify-between border-b border-gray-700 pb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="w-3 h-3 rounded-full bg-red-500 inline-block" />
+                            <span className="w-3 h-3 rounded-full bg-yellow-500 inline-block" />
+                            <span className="w-3 h-3 rounded-full bg-green-500 inline-block" />
+                            <span className="text-gray-300 text-xs font-bold uppercase ml-2 tracking-wider">AGRICA RELAY TERMINAL</span>
+                          </div>
+                          <span className="text-[10px] text-green-400 bg-green-950/60 border border-green-800 px-2 py-0.5 rounded uppercase font-bold">LIVE STREAM</span>
+                        </div>
+
+                        <div className="h-64 overflow-y-auto space-y-2 text-xs text-gray-300 pr-1">
+                          {terminalLogs.map((log, idx) => (
+                            <div key={idx} className="flex items-start gap-2 leading-relaxed">
+                              <span className="text-yellow-400 select-none">[{log.time}]</span>
+                              <span className={log.highlight ? "text-green-400 font-bold" : "text-gray-300"}>{log.msg}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="border-t border-gray-700 pt-3 flex justify-between items-center text-[11px] text-gray-400">
+                          <span>LoRa RSSI: -74 dBm (Strong)</span>
+                          <button onClick={() => setTerminalLogs([{ time: new Date().toTimeString().split(" ")[0], msg: "Console buffer cleared by operator.", highlight: false }])} className="text-yellow-400 hover:underline">
+                            Clear Terminal
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Soil Moisture Cross Section Card */}
+                      <div className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-6 shadow-sm space-y-4 relative overflow-hidden">
+                        <div className="absolute -right-6 -bottom-6 w-64 h-auto pointer-events-none opacity-[0.06] select-none">
+                          <SoilStratigraphyEngraving />
+                        </div>
+                        <div className="flex justify-between items-center border-b border-[#16130F]/15 pb-2 relative z-10">
+                          <h3 className="font-serif font-bold text-lg">Root-Zone Cross Section</h3>
+                          <span className="font-mono text-xs uppercase font-bold text-[#3E5B34]">DEPTH: 0–30 CM</span>
+                        </div>
+
+                        <div className="relative h-44 rounded-2xl overflow-hidden border-2 border-[#16130F] bg-[#D98B6F]/40 flex flex-col justify-end">
+                          <div
+                            className="bg-[#3E5B34]/60 transition-all duration-700 border-t-2 border-[#16130F] relative"
+                            style={{ height: `${currentField.live.moisture}%` }}
+                          >
+                            <div className="absolute inset-0 bg-[#A9C8EC]/30" />
+                            <div className="absolute top-2 right-3 font-mono text-xs font-bold text-[#FBF6E6] drop-shadow">
+                              Hydrated VWC: {currentField.live.moisture}%
+                            </div>
+                          </div>
+
+                          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                            <span className="font-mono text-xs uppercase font-bold text-[#16130F]/80 bg-[#FBF6E6]/95 px-3.5 py-1.5 rounded-full border border-[#16130F] flex items-center gap-1.5 shadow">
+                              <IconSoilProbe className="w-4 h-4 text-[#D98B6F]" />
+                              <span>Capacitive Probe In-Situ</span>
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 font-mono text-xs text-center">
+                          <div className="p-3 bg-[#FBF6E6] rounded-xl border border-[#16130F]/20">
+                            <span className="text-[10px] text-[#16130F]/60 block uppercase">FLOW RATE</span>
+                            <span className="font-bold text-sm text-[#3E5B34]">{currentField.flowRateLpm} L/min</span>
+                          </div>
+                          <div className="p-3 bg-[#FBF6E6] rounded-xl border border-[#16130F]/20">
+                            <span className="text-[10px] text-[#16130F]/60 block uppercase">AREA</span>
+                            <span className="font-bold text-sm">{currentField.areaAcres} Acres</span>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 3. DEDICATED ADD FIELD / PLOT REGISTRY VIEW */}
+              {activeTab === "add-field" && !selectedField && (
+                <div className="space-y-8 pb-20 max-w-4xl mx-auto animate-fadeIn">
+                  {/* Plate 4.2 Editorial Backdrop Header Banner */}
+                  <PageArtworkHeader
+                    plateNo="PLATE 4.2"
+                    title="Root-Zone Pedology & Calibration Strata"
+                    subtitle="Botanical root penetration, soil moisture horizons & capacitive probe"
+                    defaultExpanded={false}
+                  >
+                    <SoilStratigraphyEngraving />
+                  </PageArtworkHeader>
+
+                  <div className="border-b-2 border-[#16130F]/20 pb-5">
+                    <span className="font-mono text-xs uppercase tracking-widest text-[#3E5B34] font-bold">AGRICULTURAL PLOT REGISTRY & ENROLLMENT</span>
+                    <h1 className="font-serif text-4xl sm:text-5xl font-normal mt-1">
+                      Register & Calibrate <span className="italic text-[#3E5B34]">New Field Plot</span>
+                    </h1>
+                    <p className="font-sans text-sm sm:text-base text-[#16130F]/80 mt-2">
+                      Configure botanical characteristics, soil water retention capacity, irrigation methods, and trigger setpoints for automatic closed-loop pump control.
+                    </p>
+                  </div>
+
+                  {fieldAddedMessage && (
+                    <div className="p-5 bg-[#A8BE86]/30 border-2 border-[#3E5B34] rounded-2xl font-mono text-sm font-bold text-[#3E5B34] text-center flex items-center justify-center gap-2 animate-bounce">
+                      <IconCheckCircle className="w-5 h-5 text-[#3E5B34]" />
+                      <span>{fieldAddedMessage}</span>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleAddFieldSubmit} className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-8 sm:p-10 shadow-sm space-y-8 relative overflow-hidden">
+                    <div className="absolute -right-16 -bottom-16 w-96 h-auto pointer-events-none opacity-[0.06] select-none">
+                      <SoilStratigraphyEngraving />
+                    </div>
+                    
+                    {/* Section 1: Plot Identity */}
+                    <div className="space-y-4">
+                      <h3 className="font-serif text-2xl font-bold border-b border-[#16130F]/15 pb-2">1. Field Plot Identity</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                          <label className="font-mono text-xs uppercase font-bold block mb-1.5">Plot Name / Tag:</label>
+                          <input
+                            type="text"
+                            value={newFieldName}
+                            onChange={e => setNewFieldName(e.target.value)}
+                            placeholder="e.g. Field 4 · Sugarcane South"
+                            className="w-full bg-[#FBF6E6] border-2 border-[#16130F] rounded-xl px-4 py-3 font-mono text-sm focus:outline-none focus:border-[#3E5B34]"
+                          />
+                        </div>
+                        <div>
+                          <label className="font-mono text-xs uppercase font-bold block mb-1.5">Plot Area (Acres):</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="0.1"
+                            value={newAreaAcres}
+                            onChange={e => setNewAreaAcres(e.target.value)}
+                            className="w-full bg-[#FBF6E6] border-2 border-[#16130F] rounded-xl px-4 py-3 font-mono text-sm focus:outline-none focus:border-[#3E5B34]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section 2: Crop & Soil Parameters */}
+                    <div className="space-y-4">
+                      <h3 className="font-serif text-2xl font-bold border-b border-[#16130F]/15 pb-2">2. Botanical & Pedological Parameters</h3>
+                      
+                      <div>
+                        <label className="font-mono text-xs uppercase font-bold block mb-2">Crop Variety / Cultivar:</label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                          {[
+                            { id: "paddy", label: "Paddy (Rice)", icon: <IconPaddy className="w-6 h-6 mb-1 text-[#3E5B34]" /> },
+                            { id: "wheat", label: "Wheat", icon: <IconWheat className="w-6 h-6 mb-1 text-[#3E5B34]" /> },
+                            { id: "sugarcane", label: "Sugarcane", icon: <IconSugarcane className="w-6 h-6 mb-1 text-[#3E5B34]" /> },
+                            { id: "cotton", label: "Cotton", icon: <IconCotton className="w-6 h-6 mb-1" /> },
+                            { id: "vegetables", label: "Vegetables", icon: <IconVegetables className="w-6 h-6 mb-1 text-[#3E5B34]" /> },
+                            { id: "maize", label: "Maize/Corn", icon: <IconMaize className="w-6 h-6 mb-1" /> }
+                          ].map(c => (
+                            <button
+                              key={c.id}
+                              type="button"
+                              onClick={() => handleCropSelect(c.id)}
+                              className={`p-3.5 rounded-2xl border-2 flex flex-col items-center justify-center text-center transition-all ${newCrop === c.id ? "bg-[#0E0C0B] text-[#FBF6E6] border-[#0E0C0B] shadow" : "bg-[#FBF6E6] text-[#16130F] border-[#16130F]/20 hover:border-[#16130F]"}`}
+                            >
+                              {c.icon}
+                              <span className="font-mono text-xs font-bold">{c.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
+                        <div>
+                          <label className="font-mono text-xs uppercase font-bold block mb-1.5">Soil Classification:</label>
+                          <select
+                            value={newSoil}
+                            onChange={e => handleSoilSelect(e.target.value)}
+                            className="w-full bg-[#FBF6E6] border-2 border-[#16130F] rounded-xl px-4 py-3 font-mono text-sm focus:outline-none"
+                          >
+                            <option value="clay">Clay Soil (High retention, slow drainage)</option>
+                            <option value="loamy">Loamy Soil (Optimal balance)</option>
+                            <option value="sandy">Sandy Loam (Rapid drainage, low retention)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="font-mono text-xs uppercase font-bold block mb-1.5">Irrigation Delivery Method:</label>
+                          <select
+                            value={newMethod}
+                            onChange={e => setNewMethod(e.target.value)}
+                            className="w-full bg-[#FBF6E6] border-2 border-[#16130F] rounded-xl px-4 py-3 font-mono text-sm focus:outline-none"
+                          >
+                            <option value="drip">Drip Irrigation Lines (Precision)</option>
+                            <option value="sprinkler">Rotary Sprinkler Arc</option>
+                            <option value="furrow">Furrow / Canal Infiltration</option>
+                            <option value="flood">Surface Basin / Flood</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section 3: Closed-Loop Automation Setpoints */}
+                    <div className="space-y-4">
+                      <h3 className="font-serif text-2xl font-bold border-b border-[#16130F]/15 pb-2">3. Automation Setpoints & Flow Limits</h3>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                        <div className="bg-[#FBF6E6] p-4 rounded-2xl border border-[#16130F]/20">
+                          <label className="font-mono text-xs uppercase font-bold block mb-1">Trigger Moisture (T):</label>
+                          <span className="text-xs text-[#16130F]/60 block mb-2">Pump turns ON below this VWC %</span>
+                          <input
+                            type="number"
+                            min="20"
+                            max="80"
+                            value={newLowT}
+                            onChange={e => setNewLowT(e.target.value)}
+                            className="w-full bg-white border border-[#16130F]/30 rounded-lg px-3 py-2 font-mono text-sm font-bold"
+                          />
+                        </div>
+
+                        <div className="bg-[#FBF6E6] p-4 rounded-2xl border border-[#16130F]/20">
+                          <label className="font-mono text-xs uppercase font-bold block mb-1">Cut-Off Moisture:</label>
+                          <span className="text-xs text-[#16130F]/60 block mb-2">Pump turns OFF above this VWC %</span>
+                          <input
+                            type="number"
+                            min="30"
+                            max="95"
+                            value={newHighT}
+                            onChange={e => setNewHighT(e.target.value)}
+                            className="w-full bg-white border border-[#16130F]/30 rounded-lg px-3 py-2 font-mono text-sm font-bold"
+                          />
+                        </div>
+
+                        <div className="bg-[#FBF6E6] p-4 rounded-2xl border border-[#16130F]/20">
+                          <label className="font-mono text-xs uppercase font-bold block mb-1">Flow Rate (L/min):</label>
+                          <span className="text-xs text-[#16130F]/60 block mb-2">Borewell discharge rating</span>
+                          <input
+                            type="number"
+                            step="0.5"
+                            value={newFlowRate}
+                            onChange={e => setNewFlowRate(e.target.value)}
+                            className="w-full bg-white border border-[#16130F]/30 rounded-lg px-3 py-2 font-mono text-sm font-bold"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-4 rounded-full bg-[#0E0C0B] text-[#FBF6E6] font-mono text-sm uppercase font-bold hover:bg-[#3E5B34] transition-colors shadow-lg"
+                    >
+                      Save & Enroll Field to Telemetry Network →
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/* 4. MULTI-FIELD COCKPIT DASHBOARD */}
+              {activeTab === "dashboard" && !selectedField && (
+                <div className="space-y-8 pb-20 animate-fadeIn">
+                  {/* Plate 3.0 Editorial Backdrop Header Banner */}
+                  <PageArtworkHeader
+                    plateNo="PLATE 3.0"
+                    title="Cadastral Telemetry Survey & Terraces"
+                    subtitle="Multi-plot elevation contours, irrigation canals & LoRa mesh transmission"
+                    defaultExpanded={false}
+                  >
+                    <CadastralSurveyEngraving />
+                  </PageArtworkHeader>
+
+                  <div className="flex flex-wrap justify-between items-center border-b-2 border-[#16130F]/20 pb-5 gap-4">
+                    <div>
+                      <span className="font-mono text-xs uppercase tracking-widest text-[#3E5B34] font-bold">TELEMETRY COCKPIT &bull; MULTI-PLOT HOLDINGS</span>
+                      <h1 className="font-serif text-4xl sm:text-5xl font-normal mt-1">
+                        Active Farm <span className="italic text-[#3E5B34]">Plot Holding</span>
+                      </h1>
+                    </div>
+                    <button
+                      onClick={() => setActiveTab("add-field")}
+                      className="px-6 py-2.5 rounded-full bg-[#0E0C0B] text-[#FBF6E6] font-mono text-xs uppercase font-bold hover:bg-[#3E5B34] transition-colors shadow"
+                    >
+                      + Register Another Plot
+                    </button>
+                  </div>
+
+                  {/* 4 Cockpit Summary Stat Cards */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-6 shadow-sm space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-mono text-xs uppercase text-[#16130F]/70 font-bold block">REGISTERED PLOTS</span>
+                        <IconSurveyGrid className="w-5 h-5 text-[#3E5B34]" />
+                      </div>
+                      <div className="font-serif text-4xl font-bold">{fields.length} Active</div>
+                      <span className="font-mono text-xs text-[#3E5B34] font-bold block">100% LoRa Connectivity</span>
+                    </div>
+
+                    <div className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-6 shadow-sm space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-mono text-xs uppercase text-[#16130F]/70 font-bold block">WATER CONSERVED</span>
+                        <IconWaterDrop className="w-5 h-5 text-[#A9C8EC]" />
+                      </div>
+                      <div className="font-serif text-4xl font-bold text-[#3E5B34]">42.8%</div>
+                      <span className="font-mono text-xs text-[#16130F]/75 block">vs Fixed Schedule</span>
+                    </div>
+
+                    <div className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-6 shadow-sm space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-mono text-xs uppercase text-[#16130F]/70 font-bold block">MEAN MOISTURE</span>
+                        <IconSoilProbe className="w-5 h-5 text-[#D98B6F]" />
+                      </div>
+                      <div className="font-serif text-4xl font-bold">
+                        {Math.round(fields.reduce((acc, f) => acc + f.live.moisture, 0) / fields.length)}%
+                      </div>
+                      <span className="font-mono text-xs text-[#3E5B34] font-bold block">Target Band: 40–80%</span>
+                    </div>
+
+                    <div className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-6 shadow-sm space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-mono text-xs uppercase text-[#16130F]/70 font-bold block">ACTIVE RELAYS</span>
+                        <IconPumpImpeller className="w-5 h-5 text-[#D98B6F]" />
+                      </div>
+                      <div className="font-serif text-4xl font-bold text-[#D98B6F]">
+                        {fields.filter(f => f.live.pumpOn).length} Running
+                      </div>
+                      <span className="font-mono text-xs text-[#16130F]/75 block">All interlocks normal</span>
+                    </div>
+                  </div>
+
+                  {/* Field Cards Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {fields.map(field => (
+                      <div key={field.id} className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-5 relative overflow-hidden">
+                        <div className="absolute -right-8 -bottom-8 w-60 h-auto pointer-events-none opacity-[0.05] select-none">
+                          <CadastralSurveyEngraving />
+                        </div>
+                        <div className="space-y-3 relative z-10">
+                          <div className="flex justify-between items-start">
+                            <span className="font-mono text-xs uppercase font-bold text-[#3E5B34] bg-[#A8BE86]/30 px-2.5 py-1 rounded-full border border-[#3E5B34]/30">
+                              PLOT #{field.fieldNo} &bull; {field.cropLabel}
+                            </span>
+                            <span className={`w-3 h-3 rounded-full ${field.live.pumpOn ? "bg-[#3E5B34] animate-ping" : "bg-gray-400"}`} />
+                          </div>
+
+                          <h3 className="font-serif text-2xl font-bold">{field.name}</h3>
+                          <div className="font-mono text-xs text-[#16130F]/75">
+                            {field.areaAcres} Acres &bull; {field.soilLabel} &bull; {field.method.toUpperCase()}
+                          </div>
+
+                          {/* Moisture Dial Bar */}
+                          <div className="pt-2">
+                            <div className="flex justify-between font-mono text-xs font-bold mb-1">
+                              <span>Soil Moisture</span>
+                              <span className={field.live.moisture < field.config.lowT ? "text-[#D98B6F]" : "text-[#3E5B34]"}>{field.live.moisture}%</span>
+                            </div>
+                            <div className="w-full bg-[#16130F]/15 h-3 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full transition-all duration-500 ${field.live.moisture < field.config.lowT ? "bg-[#D98B6F]" : "bg-[#3E5B34]"}`}
+                                style={{ width: `${field.live.moisture}%` }}
+                              />
+                            </div>
+                            <div className="flex justify-between font-mono text-[10px] text-[#16130F]/60 mt-1">
+                              <span>Trigger: {field.config.lowT}%</span>
+                              <span>Cutoff: {field.config.highT}%</span>
+                            </div>
+                          </div>
+
+                          <div className="p-3 bg-[#FBF6E6] rounded-2xl border border-[#16130F]/20 font-mono text-xs space-y-1">
+                            <div className="flex justify-between">
+                              <span className="text-[#16130F]/70">PUMP RELAY:</span>
+                              <span className={`font-bold ${field.live.pumpOn ? "text-[#3E5B34]" : "text-[#D98B6F]"}`}>
+                                {field.live.pumpOn ? `RUNNING (${field.flowRateLpm} L/m)` : "STANDBY (OFF)"}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#16130F]/70">MODE:</span>
+                              <span className="font-bold">{field.config.mode}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                          <button
+                            onClick={() => {
+                              setActiveFieldId(field.id);
+                              setActiveTab("controller");
+                            }}
+                            className="flex-1 py-2.5 bg-[#0E0C0B] text-[#FBF6E6] rounded-full font-mono text-xs uppercase font-bold hover:bg-[#3E5B34] transition-colors"
+                          >
+                            Controller
+                          </button>
+                          <button
+                            onClick={() => toggleManualPump(field)}
+                            className={`px-4 py-2.5 rounded-full font-mono text-xs uppercase font-bold border-2 ${field.live.pumpOn ? "bg-[#D98B6F] text-[#FBF6E6] border-[#16130F]" : "border-[#16130F] hover:bg-[#16130F]/5"}`}
+                          >
+                            {field.live.pumpOn ? "Stop" : "Start"}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 5. WEATHER & RAIN STATION */}
+              {activeTab === "weather" && !selectedField && (
+                <div className="space-y-8 pb-20 max-w-4xl mx-auto animate-fadeIn">
+                  {/* Plate 5.3 Editorial Backdrop Header Banner */}
+                  <PageArtworkHeader
+                    plateNo="PLATE 5.3"
+                    title="Agricultural Meteorology & Rain Observatory"
+                    subtitle="Atmospheric weather vane, rain gauge cylinder & wind velocity anemometer"
+                    defaultExpanded={false}
+                  >
+                    <MeteorologyObservatoryEngraving />
+                  </PageArtworkHeader>
+
+                  <div className="border-b-2 border-[#16130F]/20 pb-5">
+                    <span className="font-mono text-xs uppercase tracking-widest text-[#9FA9EE] font-bold">ATMOSPHERIC TELEMETRY</span>
+                    <h1 className="font-serif text-4xl sm:text-5xl font-normal mt-1">
+                      Weather & Rain Station &bull; <span className="italic text-[#9FA9EE]">Meteorology</span>
+                    </h1>
+                    <p className="font-sans text-sm sm:text-base text-[#16130F]/80 mt-2">
+                      Hyperlocal agricultural weather station integration coordinating pump lockouts during heavy precipitation events.
+                    </p>
+                  </div>
+
+                  <form onSubmit={searchWeather} className="flex gap-3">
+                    <input
+                      type="text"
+                      value={weatherCity}
+                      onChange={e => setWeatherCity(e.target.value)}
+                      placeholder="Search farm city or district (e.g. Bhubaneswar, Ludhiana, Mumbai, Punjab)..."
+                      className="flex-1 bg-[#FAF4E2] border-2 border-[#16130F] rounded-full px-6 py-3.5 font-mono text-sm focus:outline-none focus:border-[#3E5B34]"
+                    />
+                    <button type="submit" className="px-8 py-3.5 rounded-full bg-[#0E0C0B] text-[#FBF6E6] font-mono text-sm uppercase font-bold hover:bg-[#3E5B34] transition-colors shadow">
+                      Search Station
+                    </button>
+                  </form>
+
+                  <div className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-8 sm:p-10 shadow-sm space-y-8 relative overflow-hidden">
+                    <div className="absolute -right-12 -bottom-12 w-96 h-auto pointer-events-none opacity-[0.06] select-none">
+                      <MeteorologyObservatoryEngraving />
+                    </div>
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-6 border-b border-[#16130F]/15 pb-6 relative z-10">
+                      <div>
+                        <span className="font-mono text-xs uppercase tracking-widest text-[#3E5B34] font-bold">AGRICULTURAL OBSERVATION POST</span>
+                        <h2 className="font-serif text-4xl font-bold mt-1">{weather.name}</h2>
+                        <div className="font-mono text-sm font-bold text-[#D98B6F] mt-2 tracking-wider uppercase">{weather.desc}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-serif text-6xl font-bold leading-none">{weather.temp}°C</div>
+                        <div className="font-mono text-xs text-[#16130F]/70 mt-2 uppercase">SURFACE TEMPERATURE</div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono text-center">
+                      <div className="p-5 bg-[#FBF6E6] rounded-2xl border border-[#16130F]/20">
+                        <span className="text-xs text-[#16130F]/70 block uppercase font-bold">HUMIDITY</span>
+                        <span className="font-serif text-3xl font-bold">{weather.humidity}%</span>
+                      </div>
+                      <div className="p-5 bg-[#FBF6E6] rounded-2xl border border-[#16130F]/20">
+                        <span className="text-xs text-[#16130F]/70 block uppercase font-bold">WIND VELOCITY</span>
+                        <span className="font-serif text-3xl font-bold">{weather.wind} km/h</span>
+                      </div>
+                      <div className="p-5 bg-[#FBF6E6] rounded-2xl border border-[#16130F]/20">
+                        <span className="text-xs text-[#16130F]/70 block uppercase font-bold">PRESSURE</span>
+                        <span className="font-serif text-3xl font-bold">{weather.pressure} hPa</span>
+                      </div>
+                      <div className="p-5 bg-[#FBF6E6] rounded-2xl border border-[#16130F]/20">
+                        <span className="text-xs text-[#16130F]/70 block uppercase font-bold">RAIN PROB</span>
+                        <span className={`font-serif text-3xl font-bold ${weather.rainProb >= 50 ? "text-[#9FA9EE]" : "text-[#3E5B34]"}`}>{weather.rainProb}%</span>
+                      </div>
+                    </div>
+
+                    <div className={`p-6 rounded-2xl border-2 border-[#16130F] flex flex-col sm:flex-row justify-between items-center gap-4 ${weather.isRain ? "bg-[#9FA9EE]/30" : "bg-[#FBF6E6]"}`}>
+                      <div className="flex items-center gap-4">
+                        {weather.isRain ? <IconRainCloud className="w-9 h-9 text-[#9FA9EE]" /> : <IconSun className="w-9 h-9 text-[#E7B94A]" />}
+                        <div>
+                          <div className="font-serif font-bold text-base">{weather.isRain ? "Precipitation Lockout Activated" : "Zero Rain Predicted — Irrigation Permitted"}</div>
+                          <div className="font-mono text-xs text-[#16130F]/80 mt-1">{weather.isRain ? "Field pumps will pause autonomously to save electricity and prevent over-saturation." : "Field pumps will run as required when root moisture dips."}</div>
+                        </div>
+                      </div>
+                      <button onClick={() => setActiveTab("controller")} className="px-6 py-2.5 rounded-full bg-[#0E0C0B] text-[#FBF6E6] font-mono text-xs uppercase font-bold hover:bg-[#3E5B34] flex-shrink-0">
+                        Open Controller →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 6. CONTACT & KRISHI VIGYAN KENDRA DESK */}
+              {activeTab === "contact" && !selectedField && (
+                <div className="space-y-8 pb-20 max-w-5xl mx-auto animate-fadeIn">
+                  {/* Plate 6.1 Editorial Backdrop Header Banner */}
+                  <PageArtworkHeader
+                    plateNo="PLATE 6.1"
+                    title="Krishi Vigyan Kendra Extension Hub"
+                    subtitle="Agronomist consultation desk, core sampling & canal flume"
+                    defaultExpanded={false}
+                  >
+                    <KrishiAgronomyDeskEngraving />
+                  </PageArtworkHeader>
+
+                  <div className="border-b-2 border-[#16130F]/20 pb-5">
+                    <span className="font-mono text-xs uppercase tracking-widest text-[#3E5B34] font-bold">AGRONOMY ADVISORY & EMERGENCY RELAY HOTLINE</span>
+                    <h1 className="font-serif text-4xl sm:text-5xl font-normal mt-1">
+                      Krishi Agronomist Desk &bull; <span className="italic text-[#3E5B34]">Field Dispatch</span>
+                    </h1>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                    <div className="md:col-span-5 bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-8 shadow-sm space-y-6 relative overflow-hidden">
+                      <div className="absolute -right-8 -bottom-8 w-72 h-auto pointer-events-none opacity-[0.06] select-none">
+                        <KrishiAgronomyDeskEngraving />
+                      </div>
+                      <div className="border-b border-[#16130F]/15 pb-4 relative z-10">
+                        <span className="font-mono text-xs uppercase tracking-widest text-[#D98B6F] font-bold">TOLL-FREE DISPATCH HOTLINE</span>
+                        <h2 className="font-serif text-2xl font-bold mt-1">Direct Agronomist Contact</h2>
+                      </div>
+
+                      <div className="space-y-5 font-mono text-xs relative z-10">
+                        <div>
+                          <span className="text-[#16130F]/70 uppercase block font-bold mb-1">TOLL-FREE FARMER HELPLINE</span>
+                          <a href="tel:1800-419-AGRICA" className="font-serif text-3xl font-bold text-[#3E5B34] hover:underline flex items-center gap-2">
+                            <IconPhoneDesk className="w-6 h-6 text-[#3E5B34]" />
+                            <span>1800-419-AGRICA</span>
+                          </a>
+                        </div>
+                        <div>
+                          <span className="text-[#16130F]/70 uppercase block font-bold mb-1">REGIONAL FIELD DESK</span>
+                          <span className="font-serif text-2xl font-bold">+91 (0674) 259-8821</span>
+                        </div>
+                        <div>
+                          <span className="text-[#16130F]/70 uppercase block font-bold mb-1">PHYSICAL HUB LOCATION</span>
+                          <p className="font-sans text-xs text-[#16130F]/80 leading-relaxed mt-1">Plot 14, Regional Ag-Telemetry Hub, Infocity Road, Bhubaneswar, Odisha 751024</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-7 bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-8 shadow-sm space-y-6 relative overflow-hidden">
+                      <div className="absolute -right-10 -bottom-10 w-80 h-auto pointer-events-none opacity-[0.06] select-none">
+                        <KrishiAgronomyDeskEngraving />
+                      </div>
+                      <div className="border-b border-[#16130F]/15 pb-4 relative z-10">
+                        <span className="font-mono text-xs uppercase tracking-widest text-[#3E5B34] font-bold">CONSULTATION TICKET</span>
+                        <h2 className="font-serif text-2xl font-bold mt-1">Request Field Advice or Pump Support</h2>
+                      </div>
+
+                      {contactSubmitted ? (
+                        <div className="p-8 bg-[#A8BE86]/30 border-2 border-[#3E5B34] rounded-2xl space-y-3 font-mono text-center">
+                          <IconCheckCircle className="w-10 h-10 text-[#3E5B34] mx-auto" />
+                          <h3 className="font-serif text-2xl font-bold text-[#3E5B34]">Consultation Ticket Dispatched!</h3>
+                          <p className="text-sm text-[#16130F]/85">Ticket #AGR-8842 has been routed to the on-duty agronomist. Expect callback within 2 hours.</p>
+                          <button onClick={() => setContactSubmitted(false)} className="px-6 py-2.5 bg-[#0E0C0B] text-[#FBF6E6] rounded-full text-xs uppercase font-bold">
+                            Submit Another Request
+                          </button>
+                        </div>
+                      ) : (
+                        <form onSubmit={(e) => { e.preventDefault(); setContactSubmitted(true); }} className="space-y-4">
+                          <div>
+                            <label className="font-mono text-xs uppercase font-bold block mb-1">Farmer Name / Enterprise:</label>
+                            <input type="text" required placeholder="e.g. Ramesh Kumar" className="w-full bg-white border border-[#16130F]/30 rounded-xl p-3 font-mono text-xs" />
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="font-mono text-xs uppercase font-bold block mb-1">Phone Contact:</label>
+                              <input type="tel" required placeholder="+91 98765 43210" className="w-full bg-white border border-[#16130F]/30 rounded-xl p-3 font-mono text-xs" />
+                            </div>
+                            <div>
+                              <label className="font-mono text-xs uppercase font-bold block mb-1">Inquiry Topic:</label>
+                              <select className="w-full bg-white border border-[#16130F]/30 rounded-xl p-3 font-mono text-xs">
+                                <option>Pump Relay / Actuator Tripped</option>
+                                <option>Soil Sensor Calibration Inquiry</option>
+                                <option>Crop Moisture Threshold Adjustment</option>
+                                <option>LoRa Telemetry Range Issue</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="font-mono text-xs uppercase font-bold block mb-1">Observed Field Behavior:</label>
+                            <textarea rows="3" required placeholder="Describe soil dryness or pump motor issues..." className="w-full bg-white border border-[#16130F]/30 rounded-xl p-3 font-sans text-xs" />
+                          </div>
+                          <button type="submit" className="w-full py-3.5 rounded-full bg-[#0E0C0B] text-[#FBF6E6] font-mono text-xs uppercase font-bold hover:bg-[#3E5B34] transition-colors shadow">
+                            Dispatch Inquiry to Krishi Desk →
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 7. AUTHENTICATION & FARMER PROFILE VIEW */}
+              {activeTab === "auth" && !selectedField && (
+                <div className="space-y-8 pb-20 max-w-xl mx-auto animate-fadeIn">
+                  {/* Plate 7.4 Editorial Backdrop Header Banner */}
+                  <PageArtworkHeader
+                    plateNo="PLATE 7.4"
+                    title="Farmer Stewardship, Granary & Harvest Logs"
+                    subtitle="Heritage agricultural granary, well pulley & operator seal"
+                    defaultExpanded={false}
+                  >
+                    <HarvestGranaryEngraving />
+                  </PageArtworkHeader>
+
+                  <div className="border-b-2 border-[#16130F]/20 pb-5 text-center">
+                    <span className="font-mono text-xs uppercase tracking-widest text-[#3E5B34] font-bold">FARMER SESSION & IDENTITY</span>
+                    <h1 className="font-serif text-4xl sm:text-5xl font-normal mt-1">
+                      {currentUser ? "Farmer Profile" : "Access Agrica Portal"}
+                    </h1>
+                  </div>
+
+                  {currentUser ? (
+                    <div className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-8 sm:p-10 shadow-sm text-center space-y-6 relative overflow-hidden">
+                      <div className="absolute -right-8 -bottom-8 w-72 h-auto pointer-events-none opacity-[0.06] select-none">
+                        <HarvestGranaryEngraving />
+                      </div>
+                      <div className="w-24 h-24 rounded-full bg-[#FBF6E6] border-4 border-[#16130F] flex items-center justify-center mx-auto shadow-inner relative z-10">
+                        <IconFarmerAvatar className="w-14 h-14" gender={currentUser.gender || "male"} />
+                      </div>
+
+                      <div className="space-y-2 relative z-10">
+                        <span className="font-mono text-xs uppercase tracking-widest text-[#3E5B34] font-bold">AUTHORIZED OPERATOR</span>
+                        <h2 className="font-serif text-3xl font-bold">{currentUser.name}</h2>
+                        <div className="font-mono text-sm text-[#16130F]/70">{currentUser.email}</div>
+                        <div className="font-mono text-xs text-[#D98B6F] font-bold">{currentUser.role} &bull; {currentUser.location}</div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 font-mono text-xs text-left bg-[#FBF6E6] p-4 rounded-2xl border border-[#16130F]/20">
+                        <div>
+                          <span className="text-[#16130F]/60 block uppercase">MANAGED PLOTS:</span>
+                          <span className="font-bold text-sm">{fields.length} Fields</span>
+                        </div>
+                        <div>
+                          <span className="text-[#16130F]/60 block uppercase">FARM SIZE:</span>
+                          <span className="font-bold text-sm">{currentUser.farmSize || "4.5 Acres"}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-4">
+                        <button
+                          onClick={() => setActiveTab("controller")}
+                          className="flex-1 py-3 bg-[#0E0C0B] text-[#FBF6E6] rounded-full font-mono text-xs uppercase font-bold hover:bg-[#3E5B34]"
+                        >
+                          Go to Controller →
+                        </button>
+                        <button
+                          onClick={() => setCurrentUser(null)}
+                          className="px-6 py-3 border-2 border-[#D98B6F] text-[#D98B6F] rounded-full font-mono text-xs uppercase font-bold hover:bg-[#D98B6F] hover:text-white"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-[#FAF4E2] border-2 border-[#16130F] rounded-3xl p-8 sm:p-10 shadow-sm space-y-6 relative overflow-hidden">
+                      <div className="absolute -right-10 -bottom-10 w-80 h-auto pointer-events-none opacity-[0.06] select-none">
+                        <HarvestGranaryEngraving />
+                      </div>
+                      <div className="flex border-b-2 border-[#16130F]/20 font-mono text-xs uppercase font-bold relative z-10">
+                        <button
+                          onClick={() => setAuthMode("login")}
+                          className={`flex-1 py-3 text-center border-b-4 transition-all ${authMode === "login" ? "border-[#16130F] text-[#16130F]" : "border-transparent text-[#16130F]/50"}`}
+                        >
+                          Farmer Sign In
+                        </button>
+                        <button
+                          onClick={() => setAuthMode("signup")}
+                          className={`flex-1 py-3 text-center border-b-4 transition-all ${authMode === "signup" ? "border-[#16130F] text-[#16130F]" : "border-transparent text-[#16130F]/50"}`}
+                        >
+                          New Registration
+                        </button>
+                      </div>
+
+                      {/* 1-Tap Demo Logins with Engraved Farmer Avatars */}
+                      <div className="space-y-3 font-mono text-xs">
+                        <span className="text-[10px] text-[#16130F]/60 uppercase font-bold block">ONE-CLICK DEMO FARMER ACCOUNTS:</span>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCurrentUser(DEMO_USERS[0]);
+                              setActiveTab("controller");
+                            }}
+                            className="p-3 bg-white border-2 border-[#16130F] rounded-2xl text-left hover:bg-[#A8BE86]/30 transition-all flex items-start gap-2.5"
+                          >
+                            <IconFarmerAvatar className="w-8 h-8 text-[#3E5B34] flex-shrink-0" gender="male" />
+                            <div>
+                              <div className="font-bold text-xs">Ramesh Farmer</div>
+                              <div className="text-[10px] text-[#16130F]/60">ramesh@agrica.org</div>
+                            </div>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCurrentUser(DEMO_USERS[1]);
+                              setActiveTab("controller");
+                            }}
+                            className="p-3 bg-white border-2 border-[#16130F] rounded-2xl text-left hover:bg-[#A8BE86]/30 transition-all flex items-start gap-2.5"
+                          >
+                            <IconFarmerAvatar className="w-8 h-8 text-[#D98B6F] flex-shrink-0" gender="female" />
+                            <div>
+                              <div className="font-bold text-xs">Anita Sharma</div>
+                              <div className="text-[10px] text-[#16130F]/60">anita@agrica.org</div>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="relative flex items-center justify-center my-2">
+                        <div className="border-t border-[#16130F]/20 w-full" />
+                        <span className="bg-[#FAF4E2] px-3 font-mono text-[10px] text-[#16130F]/50 uppercase">OR VIA CREDENTIALS</span>
+                      </div>
+
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          const found = DEMO_USERS.find(u => u.email.toLowerCase() === authEmail.toLowerCase());
+                          const u = found || {
+                            id: `farmer-${Date.now()}`,
+                            name: authName.trim() || authEmail.split("@")[0],
+                            email: authEmail,
+                            role: "Farmer Operator",
+                            location: authFarmLocation,
+                            gender: "male",
+                            farmSize: "3.0 Acres"
+                          };
+                          setCurrentUser(u);
+                          setActiveTab("controller");
+                        }}
+                        className="space-y-4"
+                      >
+                        {authMode === "signup" && (
+                          <div>
+                            <label className="font-mono text-xs uppercase font-bold block mb-1">Full Name:</label>
+                            <input
+                              type="text"
+                              required
+                              value={authName}
+                              onChange={e => setAuthName(e.target.value)}
+                              placeholder="e.g. Ramesh Kumar"
+                              className="w-full bg-white border border-[#16130F]/30 rounded-xl p-3 font-mono text-xs"
+                            />
+                          </div>
+                        )}
+
+                        <div>
+                          <label className="font-mono text-xs uppercase font-bold block mb-1">Email Address:</label>
+                          <input
+                            type="email"
+                            required
+                            value={authEmail}
+                            onChange={e => setAuthEmail(e.target.value)}
+                            className="w-full bg-white border border-[#16130F]/30 rounded-xl p-3 font-mono text-xs"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="font-mono text-xs uppercase font-bold block mb-1">Password:</label>
+                          <input
+                            type="password"
+                            required
+                            value={authPassword}
+                            onChange={e => setAuthPassword(e.target.value)}
+                            className="w-full bg-white border border-[#16130F]/30 rounded-xl p-3 font-mono text-xs"
+                          />
+                        </div>
+
+                        <button
+                          type="submit"
+                          className="w-full py-3.5 rounded-full bg-[#0E0C0B] text-[#FBF6E6] font-mono text-xs uppercase font-bold hover:bg-[#3E5B34] transition-colors shadow-lg"
+                        >
+                          {authMode === "login" ? "Sign In & Connect Telemetry →" : "Register Farmer Account →"}
+                        </button>
+                      </form>
+                    </div>
+                  )}
+                </div>
+              )}
+
+            </main>
+          </div>
+
+          {/* Footer */}
+          <footer className="border-t-2 border-[#16130F] bg-[#FAF4E2] py-8 px-4 font-mono text-xs text-[#16130F]/70 text-center">
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="font-serif text-lg font-bold text-[#16130F]">AGRICA</span>
+                <span>&bull; Open Agricultural Precision Telemetry Platform &bull; India</span>
+              </div>
+              <div className="text-[11px]">
+                ESP32 &bull; LoRa 868MHz Mesh &bull; Closed-Loop Hysteresis Engine
+              </div>
+            </div>
+          </footer>
+
+          {/* Mobile Bottom Navigation Bar with Authentic Print Icons */}
+          <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FBF6E6] border-t-2 border-[#16130F] px-2 py-2.5 flex justify-around shadow-lg">
+            {[
+              { id: "home", label: "Home", icon: <IconFarmstead className="w-5 h-5 mb-0.5" /> },
+              { id: "controller", label: "Pump", icon: <IconPumpImpeller className="w-5 h-5 mb-0.5" /> },
+              { id: "dashboard", label: "Cockpit", icon: <IconSurveyGrid className="w-5 h-5 mb-0.5" /> },
+              { id: "add-field", label: "+Plot", icon: <IconSoilProbe className="w-5 h-5 mb-0.5" /> },
+              { id: "weather", label: "Weather", icon: <IconRainCloud className="w-5 h-5 mb-0.5" /> },
+              { id: "auth", label: "Account", icon: <IconFarmerAvatar className="w-5 h-5 mb-0.5" gender={currentUser?.gender || "male"} /> }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => { setSelectedField(null); setActiveTab(tab.id); }}
+                className={`flex flex-col items-center text-[10px] font-mono uppercase font-bold ${activeTab === tab.id && !selectedField ? "text-[#3E5B34]" : "text-[#16130F]/60"}`}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </nav>
+
+          {/* Alerts Drawer Modal */}
+          {isAlertsOpen && (
+            <div className="fixed inset-0 z-50 bg-[#16130F]/60 flex justify-end">
+              <div className="w-full max-w-sm bg-[#FBF6E6] h-full border-l-2 border-[#16130F] p-6 flex flex-col justify-between shadow-2xl">
+                <div>
+                  <div className="flex justify-between items-center border-b-2 border-[#16130F] pb-4 mb-4">
+                    <h2 className="font-serif text-2xl font-bold">Alerts & Status</h2>
+                    <button onClick={() => setIsAlertsOpen(false)} className="font-mono text-xl font-bold p-1">✕</button>
+                  </div>
+                  <div className="space-y-4 font-mono text-xs">
+                    <div className="p-4 bg-[#FAF4E2] border-2 border-[#3E5B34] rounded-2xl space-y-1">
+                      <div className="font-bold text-[#3E5B34] flex items-center gap-1.5">
+                        <IconCheckCircle className="w-4 h-4 text-[#3E5B34]" />
+                        <span>LoRa Field Mesh Nominal</span>
+                      </div>
+                      <div className="text-[11px] text-[#16130F]/80">All 3 agricultural plot sensor nodes transmitting at 60s intervals. RSSI -74 dBm.</div>
+                    </div>
+                    <div className="p-4 bg-[#FAF4E2] border-2 border-[#D98B6F] rounded-2xl space-y-1">
+                      <div className="font-bold text-[#D98B6F] flex items-center gap-1.5">
+                        <IconWarningTriangle className="w-4 h-4 text-[#D98B6F]" />
+                        <span>Field 1 Irrigation Pending</span>
+                      </div>
+                      <div className="text-[11px] text-[#16130F]/80">Moisture (42%) is below target threshold (60%). Auto-actuator relay is armed.</div>
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => setIsAlertsOpen(false)} className="w-full py-3 bg-[#0E0C0B] text-[#FBF6E6] rounded-full font-mono text-xs uppercase font-bold">
+                  Close Alerts
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

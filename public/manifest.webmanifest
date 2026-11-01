@@ -1,0 +1,24 @@
+{
+  "name": "AGRICA — Smart Precision Irrigation",
+  "short_name": "AGRICA",
+  "description": "Real-time field moisture telemetry, pump automation, and agronomic recommendations.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBF6E6",
+  "theme_color": "#FBF6E6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

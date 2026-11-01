@@ -1,0 +1,34 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "devices": {
+      "$deviceId": {
+        ".read": "auth != null && data.child('ownerUid').val() === auth.uid",
+        ".write": "auth != null && (!data.exists() || data.child('ownerUid').val() === auth.uid)"
+      }
+    },
+    "readings": {
+      "$deviceId": {
+        ".read": "auth != null",
+        ".write": "auth != null || (newData.hasChildren(['moisturePct', 'rawAdc', 'pumpOn']))"
+      }
+    },
+    "commands": {
+      "$deviceId": {
+        ".read": "auth != null || (newData.child('ts').exists())",
+        ".write": "auth != null"
+      }
+    },
+    "events": {
+      "$fieldId": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    }
+  }
+}
